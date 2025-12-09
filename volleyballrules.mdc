@@ -1,0 +1,34 @@
+---
+alwaysApply: true
+---
+
+# Volley Project Rules
+
+## Technology Stack
+- Next.js (App Router)
+- React + TypeScript
+- TailwindCSS with RTL support
+- ShadCN UI components
+- Origin (https://coss.com/origin)
+
+## Project Structure
+  /app
+  /components
+  /lib
+  /styles
+  /utils
+
+## Frontend Rules
+- All UI must be RTL by default.
+- Use ShadCN UI for all components.
+- TailwindCSS must include rtl plugin.
+- Follow a minimal, clean, modern UI/UX style.
+- Components must be reusable, composable, and concise.
+- No mixed UI libraries unless explicitly asked.
+
+## Working Conventions
+- Before coding, always present a short architecture plan.
+- Modify only the files I approve.
+- Prefer small and maintainable components/services.
+- Provide file change list + full code for each file.
+

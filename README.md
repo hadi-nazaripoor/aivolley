@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Volley - Sports News Platform
+
+A modern, full-stack sports news platform built with Next.js, TypeScript, TailwindCSS, and ShadCN UI.
+
+## Design Philosophy
+
+This project follows the visual design language of **football360.ir** as aesthetic inspiration:
+- Clean, modern sports-news UI style
+- Card-based content layout
+- Clear typography and spacing hierarchy
+- Medium to high content density
+- RTL-first design
+
+**Note**: We do NOT copy code or assets from football360.ir. We use it purely as visual reference.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: TailwindCSS v4
+- **UI Components**: ShadCN UI
+- **Layout**: RTL (Right-to-Left) by default
+
+## Project Structure
+
+```
+volley/
+├── app/              # Next.js App Router pages
+├── components/       # React components
+│   ├── ui/          # ShadCN components
+│   ├── layout/      # Layout components
+│   ├── features/    # Feature-specific components
+│   └── shared/      # Shared components
+├── lib/             # Utilities & configurations
+│   ├── api/         # API client layer
+│   ├── utils/       # Utility functions
+│   ├── hooks/       # Custom hooks
+│   ├── constants/   # Constants
+│   └── types/       # TypeScript types
+└── public/          # Static assets
+```
 
 ## Getting Started
 
-First, run the development server:
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Initialize ShadCN UI
+
+```bash
+npx shadcn@latest init
+```
+
+### 3. Add ShadCN Components
+
+```bash
+npx shadcn@latest add button card input label
+```
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Documentation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Complete architecture and folder structure
+- **[DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md)** - Design system and visual guidelines
+- **[RTL_GUIDE.md](./RTL_GUIDE.md)** - RTL implementation guide
+- **[SETUP.md](./SETUP.md)** - Detailed setup instructions
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Key Features
 
-## Learn More
+- ✅ RTL-first layout
+- ✅ TypeScript strict mode
+- ✅ ShadCN UI components
+- ✅ TailwindCSS utility-first styling
+- ✅ Clean, scalable architecture
+- ✅ Sports news UI aesthetic
+- ✅ Responsive design
+- ✅ Performance optimized
 
-To learn more about Next.js, take a look at the following resources:
+## Development Guidelines
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Follow the folder structure defined in `ARCHITECTURE.md`
+2. Use naming conventions as specified
+3. Follow design system guidelines from `DESIGN_SYSTEM.md`
+4. Ensure all components are RTL-aware
+5. Use Tailwind utilities and ShadCN components
+6. Maintain consistent spacing and typography
+7. Write clean, typed, reusable components
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private project
