@@ -32,11 +32,15 @@ body {
   font-family: var(--font-iransansx), "IRANSansX", "IRANSans", sans-serif;
 }
 
-/* RTL Support */
-[dir="rtl"] {
-  direction: rtl;
+/* Scrollbar utilities */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-[dir="rtl"] * {
-  text-align: right;
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
+
+/* RTL Support */
+

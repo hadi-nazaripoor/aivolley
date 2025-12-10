@@ -65,7 +65,7 @@ function SidebarContent() {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="flex grow flex-col gap-y-5 overflow-y-auto border-e border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 pb-4 lg:border-e">
+    <div className="flex grow flex-col gap-y-5 overflow-y-auto border-e border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 pb-4 lg:border-e scrollbar-hide">
       <div className="flex h-16 shrink-0 items-center">
         <Image
           alt="Your Company"
