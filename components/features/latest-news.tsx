@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import Image from "next/image";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { FreeMode, Navigation } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
 import { cn } from "@/lib/utils/cn";
 import { Play } from "lucide-react";
+import "swiper/css";
+import "swiper/css/free-mode";
+import "swiper/css/navigation";
 
 interface NewsArticle {
   id: number;
@@ -23,13 +27,42 @@ interface LatestNewsProps {
 
 const filterTabs = [
   { id: "all", label: "همه" },
-  { id: "taleji", label: "تالژی" },
+  { id: "domestic-football", label: "فوتبال داخلی" },
+  { id: "foreign-football", label: "فوتبال خارجی" },
+  { id: "video", label: "ویدیو" },
+  { id: "news", label: "خبر" },
+  { id: "podcast", label: "پادکست" },
+  { id: "domestic-summary", label: "خلاصه‌ بازی‌ داخلی" },
+  { id: "foreign-summary", label: "خلاصه بازی‌ خارجی" },
+  { id: "fun-abutaleb", label: "فان با ابوطالب" },
+  { id: "live360", label: "لایو 360" },
+  { id: "challenge360", label: "چالش فوتبال ۳۶۰" },
+  { id: "360degrees", label: "۳۶۰ درجه" },
+  { id: "exclusive-report", label: "گزارش اختصاصی" },
+  { id: "exclusive-videos", label: "ویدیو‌های اختصاصی" },
+  { id: "refereeing", label: "کارشناسی داوری" },
+  { id: "conference", label: "کنفرانس و میکسدزون" },
+  { id: "champions-league", label: "مجله لیگ‌ قهرمانان اروپا" },
+  { id: "memory-room", label: "اتاق خاطره ۳۶۰" },
+  { id: "fantasy", label: "فانتزی‌باز" },
+  { id: "other-interviews", label: "سایر مصاحبه‌ها" },
+  { id: "european-analysis", label: "تحلیل و کارشناسی فوتبال اروپا" },
+  { id: "best-of-month", label: "بهترین‌های ماه از نگاه فوتبال ۳۶۰" },
+  { id: "women", label: "زنان" },
+  { id: "futsal", label: "فوتسال" },
+  { id: "exclusive-docs", label: "مستندهای اختصاصی" },
+  { id: "foreign-docs", label: "مستند‌های خارجی" },
+  { id: "legionnaires", label: "لژیونرها" },
+  { id: "out-of-sight", label: "خارج از دید" },
+  { id: "foreign-clips", label: "کلیپ‌های خارجی" },
+  { id: "nostalgia", label: "نوستالژی" },
   { id: "q360", label: "کیو ۳۶۰" },
-  { id: "interviews", label: "مصاحبه های عادل فردوسی پور" },
+  { id: "adel-interviews", label: "مصاحبه‌های عادل فردوسی‌پور" },
 ];
 
 export function LatestNews({ articles, className }: LatestNewsProps) {
   const [selectedTab, setSelectedTab] = useState(0);
+  const [swiper, setSwiper] = useState<SwiperType | null>(null);
 
   if (!articles || articles.length === 0) {
     return null;
@@ -41,19 +74,49 @@ export function LatestNews({ articles, className }: LatestNewsProps) {
       <div className="mb-4">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">جدیدترین ها</h2>
 
-        {/* Filter Tabs */}
-        <TabGroup selectedIndex={selectedTab} onChange={setSelectedTab}>
-          <TabList className="flex gap-2 sm:gap-3 border-b border-gray-200">
-            {filterTabs.map((tab) => (
-              <Tab
-                key={tab.id}
-                className="px-3 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:text-gray-900 focus:outline-none data-[selected]:text-blue-600 data-[selected]:border-blue-600 transition-colors duration-200"
-              >
-                {tab.label}
-              </Tab>
+        {/* Filter Tabs - Swiper */}
+        <div className="w-full relative">
+          <Swiper
+            onSwiper={setSwiper}
+            modules={[FreeMode, Navigation]}
+            spaceBetween={8}
+            slidesPerView="auto"
+            freeMode={true}
+            dir="rtl"
+            navigation={{
+              nextEl: ".swiper-button-next",
+              prevEl: ".swiper-button-prev",
+            }}
+            className="matchesTab"
+          >
+            {filterTabs.map((tab, index) => (
+              <SwiperSlide key={tab.id} style={{ width: "auto", height: "28px", marginLeft: "8px" }}>
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedTab(index)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelectedTab(index);
+                    }
+                  }}
+                  className={cn(
+                    "px-3 py-1.5 text-sm font-medium whitespace-nowrap cursor-pointer transition-colors duration-200 rounded h-full flex items-center",
+                    "hover:text-gray-900 focus:outline-none",
+                    selectedTab === index
+                      ? "text-blue-600 font-semibold"
+                      : "text-gray-600"
+                  )}
+                >
+                  {tab.label}
+                </div>
+              </SwiperSlide>
             ))}
-          </TabList>
-        </TabGroup>
+          </Swiper>
+          <div className="swiper-button-prev swiper-button-disabled"></div>
+          <div className="swiper-button-next"></div>
+        </div>
       </div>
 
       {/* News Articles List */}

@@ -1,9 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import Image from "next/image";
+import { useState, useEffect, useRef } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Thumbs } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
 import { cn } from "@/lib/utils/cn";
+import "swiper/css";
+import "swiper/css/thumbs";
+import "swiper/css/autoplay";
 
 interface NewsItem {
   id: number;
@@ -22,29 +26,58 @@ interface NewsSliderProps {
 }
 
 export function NewsSlider({ items, className, autoPlayInterval = 5000 }: NewsSliderProps) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
   const [progress, setProgress] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const mainSwiperRef = useRef<SwiperType | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (items.length === 0) return;
+    if (items.length === 0 || !mainSwiperRef.current) return;
 
-    setProgress(0);
-    const startTime = Date.now();
-
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const newProgress = Math.min((elapsed / autoPlayInterval) * 100, 100);
-
-      if (newProgress >= 100) {
-        setSelectedIndex((current) => (current + 1) % items.length);
-        setProgress(0);
-      } else {
-        setProgress(newProgress);
+    const swiper = mainSwiperRef.current;
+    
+    // Reset progress when slide changes
+    const handleSlideChange = () => {
+      setActiveIndex(swiper.activeIndex);
+      setProgress(0);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
       }
-    }, 50);
+      
+      // Start progress animation
+      const startTime = Date.now();
+      progressIntervalRef.current = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const newProgress = Math.min((elapsed / autoPlayInterval) * 100, 100);
+        setProgress(newProgress);
+        
+        if (newProgress >= 100) {
+          if (progressIntervalRef.current) {
+            clearInterval(progressIntervalRef.current);
+          }
+        }
+      }, 16); // ~60fps for smooth animation
+    };
 
-    return () => clearInterval(interval);
-  }, [selectedIndex, items.length, autoPlayInterval]);
+    const handleAutoplayStart = () => {
+      handleSlideChange();
+    };
+
+    swiper.on("slideChange", handleSlideChange);
+    swiper.on("autoplayStart", handleAutoplayStart);
+    
+    // Initialize progress for first slide
+    handleSlideChange();
+
+    return () => {
+      swiper.off("slideChange", handleSlideChange);
+      swiper.off("autoplayStart", handleAutoplayStart);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, [items.length, autoPlayInterval]);
 
   if (!items || items.length === 0) {
     return null;
@@ -52,60 +85,95 @@ export function NewsSlider({ items, className, autoPlayInterval = 5000 }: NewsSl
 
   return (
     <section className={cn("w-full relative", className)}>
-      <TabGroup selectedIndex={selectedIndex} onChange={setSelectedIndex} className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm w-full">
-        {/* Main Featured Article - 50/50 Split */}
-        <TabPanels>
-          {items.map((item) => (
-            <TabPanel key={item.id} className="focus:outline-none">
-              <article className="grid grid-cols-2 gap-0 w-full h-[226px] rounded-lg overflow-hidden">
-                {/* Left Half - Image */}
-                <div className="relative w-full h-full overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.imageAlt}
-                    className="w-full h-full object-cover"
-                    sizes="(max-width: 768px) 50vw, 33vw"
-                  />
-                  {/* Progress Bar at Bottom of Image */}
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200/50">
-                    <div
-                      className="h-full bg-green-500 transition-all duration-100 ease-linear"
-                      style={{ width: `${progress}%` }}
+      <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm w-full">
+        {/* Progress Bar at Top */}
+        <div style={{ width: "100%", position: "relative", height: "4px", marginBottom: "16px" }}>
+          <div
+            className="h-full bg-green-500"
+            style={{
+              width: `${progress}%`,
+              transition: "width 0.1s linear",
+            }}
+          />
+        </div>
+
+        {/* Main Featured Article Swiper - 50/50 Split */}
+        <div className="w-full relative h-auto lg:h-[226px]">
+          <Swiper
+            onSwiper={(swiper) => {
+              mainSwiperRef.current = swiper;
+            }}
+            modules={[Autoplay, Thumbs]}
+            spaceBetween={10}
+            slidesPerView={1}
+            autoplay={{
+              delay: autoPlayInterval,
+              disableOnInteraction: false,
+            }}
+            thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+            dir="rtl"
+            className="w-full h-full"
+            style={{ height: "100%" }}
+          >
+            {items.map((item) => (
+              <SwiperSlide key={item.id} className="!h-auto lg:!h-[226px]">
+                <article className="grid grid-cols-1 lg:grid-cols-2 gap-0 w-full h-full rounded-lg overflow-hidden">
+                  {/* Image - Top on mobile/tablet, Left on desktop */}
+                  <div className="relative w-full h-48 sm:h-56 md:h-64 lg:h-full overflow-hidden">
+                    <img
+                      src={item.image}
+                      alt={item.imageAlt}
+                      className="w-full h-full object-cover"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
                     />
                   </div>
-                </div>
 
-                {/* Right Half - Text Content */}
-                <div className="flex flex-col justify-center p-4 sm:p-5 md:p-6 bg-white">
-                  <h2 className="text-base sm:text-lg md:text-xl font-bold text-blue-600 mb-2 sm:mb-3 leading-tight line-clamp-2">
-                    {item.title}
-                  </h2>
-                  {item.excerpt && (
-                    <p className="text-xs sm:text-sm text-gray-900 line-clamp-3 sm:line-clamp-4 leading-relaxed">
-                      {item.excerpt}
-                    </p>
-                  )}
-                </div>
-              </article>
-            </TabPanel>
-          ))}
-        </TabPanels>
+                  {/* Text Content - Bottom on mobile/tablet, Right on desktop */}
+                  <div className="flex flex-col justify-center p-4 sm:p-5 md:p-6 bg-white">
+                    <h2 className="text-base sm:text-lg md:text-xl font-bold text-blue-600 mb-2 sm:mb-3 leading-tight line-clamp-2" style={{ margin: 0, padding: 0 }}>
+                      {item.title}
+                    </h2>
+                    {/* Excerpt - Hidden on mobile/tablet, visible on desktop */}
+                    {item.excerpt ? (
+                      <h4 className="hidden lg:block text-xs sm:text-sm text-gray-900 line-clamp-3 sm:line-clamp-4 leading-relaxed" style={{ margin: 0, padding: 0 }}>
+                        {item.excerpt}
+                      </h4>
+                    ) : item.timeAgo ? (
+                      <h4 className="hidden lg:block text-xs sm:text-sm text-gray-500" style={{ margin: 0, padding: 0 }}>
+                        {item.timeAgo}
+                      </h4>
+                    ) : null}
+                  </div>
+                </article>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
 
-        {/* Thumbnail Gallery - Horizontal Scrollable (Images Only) */}
-        <div className="w-full mt-4 overflow-x-auto scrollbar-hide">
-          <TabList className="flex gap-2 sm:gap-2.5 min-w-max">
+        {/* Thumbnail Gallery Swiper */}
+        <div className="w-full mt-4">
+          <Swiper
+            onSwiper={setThumbsSwiper}
+            modules={[Thumbs]}
+            spaceBetween={8}
+            slidesPerView="auto"
+            watchSlidesProgress={true}
+            dir="rtl"
+            className="swiper-thumbs"
+          >
             {items.map((item, index) => (
-              <Tab
+              <SwiperSlide
                 key={item.id}
-                className="group relative flex-shrink-0 cursor-pointer focus:outline-none transition-all duration-200"
+                className="cursor-pointer"
+                style={{ width: "auto" }}
               >
                 <div className="relative">
-                  {/* Thumbnail Image Only */}
+                  {/* Thumbnail Image */}
                   <div className="relative w-20 h-14 sm:w-24 sm:h-16 md:w-28 md:h-20 rounded-lg overflow-hidden bg-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
                     <img
                       src={item.image}
                       alt={item.imageAlt}
-                      className="w-full h-full object-cover transition-opacity duration-200 group-hover:opacity-80"
+                      className="w-full h-full object-cover transition-opacity duration-200 hover:opacity-80"
                       sizes="(max-width: 640px) 80px, (max-width: 768px) 96px, 112px"
                     />
                   </div>
@@ -114,15 +182,15 @@ export function NewsSlider({ items, className, autoPlayInterval = 5000 }: NewsSl
                   <div
                     className={cn(
                       "absolute bottom-0 left-0 right-0 h-0.5 sm:h-1 bg-green-500 rounded-b-lg transition-opacity duration-200",
-                      "opacity-0 group-data-[selected]:opacity-100"
+                      activeIndex === index ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </div>
-              </Tab>
+              </SwiperSlide>
             ))}
-          </TabList>
+          </Swiper>
         </div>
-      </TabGroup>
+      </div>
     </section>
   );
 }
