@@ -78,7 +78,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                     aria-hidden="true"
                     className="ms-4 text-sm/6 font-semibold text-gray-900 dark:text-gray-100"
                   >
-                    {user.phoneNumber}
+                    {user.firstName} {user.lastName}
                   </span>
                   <ChevronDown
                     aria-hidden="true"

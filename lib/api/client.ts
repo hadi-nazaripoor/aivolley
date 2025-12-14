@@ -3,12 +3,12 @@
  * Centralized API client for all API calls
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
+import { APP_CONFIG } from "@/lib/constants/config";
 
 export class ApiClient {
   private baseUrl: string;
 
-  constructor(baseUrl: string = API_BASE_URL) {
+  constructor(baseUrl: string = APP_CONFIG.API_BASE_URL) {
     this.baseUrl = baseUrl;
   }
 

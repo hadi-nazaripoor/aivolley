@@ -5,16 +5,28 @@
 
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: "/auth/login",
-    REGISTER: "/auth/register",
-    LOGOUT: "/auth/logout",
-    REFRESH: "/auth/refresh",
+    LOGIN: "/authentication/login",
+    REGISTER: "/authentication/register",
+    LOGOUT: "/authentication/logout",
+    REFRESH: "/authentication/refresh",
   },
   USERS: {
     LIST: "/users",
     DETAIL: (id: string) => `/users/${id}`,
     UPDATE: (id: string) => `/users/${id}`,
     DELETE: (id: string) => `/users/${id}`,
+  },
+  MEMBERS: {
+    LIST: "/member",
+    PLAYERS: "/members/players",
+    COACHES: "/members/coaches",
+    REFEREES: "/members/referees",
+    DETAIL: (id: string | number) => `/members/${id}`,
+    CREATE: "/member",
+  },
+  LOCATIONS: {
+    PROVINCES: "/province",
+    CITIES: (provinceId: string) => `/city/by-province?provinceId=${provinceId}`,
   },
 } as const;
 

@@ -3,16 +3,21 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/lib/constants/routes";
+import { login as loginApi, register as registerApi } from "@/lib/api/services/auth";
 
 interface User {
+  id: string | number;
+  firstName: string;
+  lastName: string;
   phoneNumber: string;
+  token?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (phoneNumber: string, password: string) => Promise<void>;
-  register: (phoneNumber: string, password: string) => Promise<void>;
+  register: (phoneNumber: string, firstName: string, lastName: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -43,11 +48,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (phoneNumber: string, password: string) => {
     try {
-      // TODO: Replace with actual API call
-      // For now, simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const response = await loginApi(phoneNumber, password);
       
-      const userData: User = { phoneNumber };
+      if (!response || !response.user) {
+        throw new Error("پاسخ نامعتبر از سرور");
+      }
+
+      const userData: User = {
+        id: response.user.id,
+        firstName: response.user.firstName,
+        lastName: response.user.lastName,
+        phoneNumber: response.user.phoneNumber,
+        token: response.token,
+      };
+      
       setUser(userData);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
       
@@ -59,13 +73,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [router]);
 
-  const register = useCallback(async (phoneNumber: string, password: string) => {
+  const register = useCallback(async (
+    phoneNumber: string,
+    firstName: string,
+    lastName: string,
+    password: string
+  ) => {
     try {
-      // TODO: Replace with actual API call
-      // For now, simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const response = await registerApi(phoneNumber, firstName, lastName, password);
       
-      const userData: User = { phoneNumber };
+      if (!response || !response.user) {
+        throw new Error("پاسخ نامعتبر از سرور");
+      }
+
+      const userData: User = {
+        id: response.user.id,
+        firstName: response.user.firstName,
+        lastName: response.user.lastName,
+        phoneNumber: response.user.phoneNumber,
+        token: response.token,
+      };
+      
       setUser(userData);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
       

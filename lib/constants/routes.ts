@@ -11,6 +11,7 @@ export const ROUTES = {
   RESET_PASSWORD: "/auth/reset-password",
   DASHBOARD: "/dashboard",
   SETTINGS: "/settings",
+  PLAYERS: "/players",
 } as const;
 
 export type Route = (typeof ROUTES)[keyof typeof ROUTES];

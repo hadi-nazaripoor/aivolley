@@ -16,6 +16,7 @@ export default function RegisterPage() {
   const { register: registerUser, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -32,9 +33,18 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
+    setError(null);
     try {
-      await registerUser(data.phoneNumber, data.password);
+      await registerUser(
+        data.phoneNumber,
+        data.firstName,
+        data.lastName,
+        data.password
+      );
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "ثبت‌نام با خطا مواجه شد";
+      setError(errorMessage);
       console.error("Registration failed:", error);
     } finally {
       setIsLoading(false);
@@ -61,6 +71,12 @@ export default function RegisterPage() {
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
         <div className="bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {error && (
+              <div className="rounded-md bg-red-50 p-4">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+
             <div>
               <Label htmlFor="phoneNumber">شماره تلفن</Label>
               <div className="mt-2">
@@ -74,6 +90,42 @@ export default function RegisterPage() {
                 {errors.phoneNumber && (
                   <p className="mt-1 text-sm text-red-600">
                     {errors.phoneNumber.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="firstName">نام</Label>
+              <div className="mt-2">
+                <Input
+                  id="firstName"
+                  type="text"
+                  placeholder="نام"
+                  autoComplete="given-name"
+                  {...register("firstName")}
+                />
+                {errors.firstName && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.firstName.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="lastName">نام خانوادگی</Label>
+              <div className="mt-2">
+                <Input
+                  id="lastName"
+                  type="text"
+                  placeholder="نام خانوادگی"
+                  autoComplete="family-name"
+                  {...register("lastName")}
+                />
+                {errors.lastName && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.lastName.message}
                   </p>
                 )}
               </div>

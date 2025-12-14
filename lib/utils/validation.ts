@@ -18,9 +18,17 @@ export const loginSchema = z.object({
   password: passwordSchema,
 });
 
+// Name validation
+export const nameSchema = z
+  .string()
+  .min(1, "این فیلد الزامی است")
+  .min(2, "حداقل 2 کاراکتر باید باشد");
+
 // Register schema
 export const registerSchema = z.object({
   phoneNumber: phoneNumberSchema,
+  firstName: nameSchema,
+  lastName: nameSchema,
   password: passwordSchema,
   confirmPassword: z.string().min(1, "تکرار رمز عبور الزامی است"),
 }).refine((data) => data.password === data.confirmPassword, {

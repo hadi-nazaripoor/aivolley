@@ -16,6 +16,7 @@ export default function LoginPage() {
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -32,9 +33,13 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
+    setError(null);
     try {
       await login(data.phoneNumber, data.password);
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "ورود با خطا مواجه شد";
+      setError(errorMessage);
       console.error("Login failed:", error);
     } finally {
       setIsLoading(false);
@@ -61,6 +66,12 @@ export default function LoginPage() {
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
         <div className="bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {error && (
+              <div className="rounded-md bg-red-50 p-4">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+
             <div>
               <Label htmlFor="phoneNumber">شماره تلفن</Label>
               <div className="mt-2">
