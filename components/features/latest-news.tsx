@@ -39,23 +39,6 @@ const filterTabs = [
   { id: "challenge360", label: "چالش فوتبال ۳۶۰" },
   { id: "360degrees", label: "۳۶۰ درجه" },
   { id: "exclusive-report", label: "گزارش اختصاصی" },
-  { id: "exclusive-videos", label: "ویدیو‌های اختصاصی" },
-  { id: "refereeing", label: "کارشناسی داوری" },
-  { id: "conference", label: "کنفرانس و میکسدزون" },
-  { id: "champions-league", label: "مجله لیگ‌ قهرمانان اروپا" },
-  { id: "memory-room", label: "اتاق خاطره ۳۶۰" },
-  { id: "fantasy", label: "فانتزی‌باز" },
-  { id: "other-interviews", label: "سایر مصاحبه‌ها" },
-  { id: "european-analysis", label: "تحلیل و کارشناسی فوتبال اروپا" },
-  { id: "best-of-month", label: "بهترین‌های ماه از نگاه فوتبال ۳۶۰" },
-  { id: "women", label: "زنان" },
-  { id: "futsal", label: "فوتسال" },
-  { id: "exclusive-docs", label: "مستندهای اختصاصی" },
-  { id: "foreign-docs", label: "مستند‌های خارجی" },
-  { id: "legionnaires", label: "لژیونرها" },
-  { id: "out-of-sight", label: "خارج از دید" },
-  { id: "foreign-clips", label: "کلیپ‌های خارجی" },
-  { id: "nostalgia", label: "نوستالژی" },
   { id: "q360", label: "کیو ۳۶۰" },
   { id: "adel-interviews", label: "مصاحبه‌های عادل فردوسی‌پور" },
 ];
@@ -83,10 +66,10 @@ export function LatestNews({ articles, className }: LatestNewsProps) {
             slidesPerView="auto"
             freeMode={true}
             dir="rtl"
-            navigation={{
-              nextEl: ".swiper-button-next",
-              prevEl: ".swiper-button-prev",
-            }}
+            // navigation={{
+            //   nextEl: ".swiper-button-next",
+            //   prevEl: ".swiper-button-prev",
+            // }}
             className="matchesTab"
           >
             {filterTabs.map((tab, index) => (
@@ -114,8 +97,8 @@ export function LatestNews({ articles, className }: LatestNewsProps) {
               </SwiperSlide>
             ))}
           </Swiper>
-          <div className="swiper-button-prev swiper-button-disabled"></div>
-          <div className="swiper-button-next"></div>
+          {/* <div className="swiper-button-next"></div>
+          <div className="swiper-button-prev swiper-button-disabled"></div> */}
         </div>
       </div>
 
