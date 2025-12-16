@@ -8,6 +8,7 @@ import { API_ENDPOINTS } from "../endpoints";
 import type {
   ApiMember,
   MembersListResponse,
+  PaginatedMembersResponse,
   MemberDetailResponse,
   CreateMemberRequest,
   CreateMemberResponse,
@@ -49,6 +50,34 @@ export async function getPlayers(): Promise<ApiMember[]> {
     throw new Error(response.error || "Failed to fetch players");
   }
   return response.data;
+}
+
+/**
+ * Fetch players with pagination
+ */
+export async function getPlayersPaginated(
+  pageNumber: number = 1,
+  pageSize: number = 10
+): Promise<{ items: ApiMember[]; totalCount: number; pageNumber: number; pageSize: number }> {
+  const queryParams = new URLSearchParams({
+    pageNumber: pageNumber.toString(),
+    pageSize: pageSize.toString(),
+  });
+  
+  const response = await apiClient.get<PaginatedMembersResponse>(
+    `${API_ENDPOINTS.MEMBERS.LIST}?${queryParams.toString()}`
+  );
+  console.log(response);
+  if (!response.success || !response.data) {
+    throw new Error(response.error || "Failed to fetch players");
+  }
+  
+  return {
+    items: response.data.items || [],
+    totalCount: response.data.totalCount || 0,
+    pageNumber: response.data.pageNumber || pageNumber,
+    pageSize: response.data.pageSize || pageSize,
+  };
 }
 
 /**

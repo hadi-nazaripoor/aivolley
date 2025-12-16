@@ -240,9 +240,9 @@ export function CreateMemberDialog({
         <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
           <DialogPanel
             transition
-            className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-right shadow-xl transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-2xl sm:p-6 data-closed:sm:translate-y-0 data-closed:sm:scale-95"
+            className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-right shadow-xl transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 w-full sm:max-w-2xl sm:p-6 data-closed:sm:translate-y-0 data-closed:sm:scale-95"
           >
-            <div className="absolute top-0 left-0 hidden pt-4 pl-4 sm:block">
+            <div className="absolute top-0 left-0 pt-4 pl-4">
               <button
                 type="button"
                 onClick={onClose}
@@ -438,7 +438,7 @@ export function CreateMemberDialog({
                 <Button
                   type="submit"
                   disabled={isSubmitting || loadingProvinces || loadingCities}
-                  className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 disabled:bg-gray-400 sm:ml-3 sm:w-auto"
+                  className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 disabled:bg-gray-400 sm:mr-3 sm:w-auto"
                 >
                   {isSubmitting ? "در حال ایجاد..." : "ایجاد"}
                 </Button>

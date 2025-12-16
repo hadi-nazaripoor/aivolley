@@ -65,6 +65,15 @@ export interface MembersListResponse extends BaseResponse {
   data?: ApiMember[];
 }
 
+export interface PaginatedMembersResponse extends BaseResponse {
+  data?: {
+    items: ApiMember[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+  };
+}
+
 export interface MemberDetailResponse extends BaseResponse {
   data?: ApiMember;
 }

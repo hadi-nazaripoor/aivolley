@@ -5,7 +5,8 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { PlayersTable } from "@/components/features/players-table";
 import { CreateMemberDialog } from "@/components/features/create-member-dialog";
-import { getPlayers } from "@/lib/api/services/members";
+import { getPlayersPaginated } from "@/lib/api/services/members";
+import { usePagination } from "@/lib/hooks/use-pagination";
 import type { ApiMember } from "@/lib/api/types";
 import { getImageUrl } from "@/lib/utils/image-url";
 
@@ -27,14 +28,21 @@ export default function PlayersPage() {
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const pagination = usePagination(10);
+  const { pagination: paginationState, setPageNumber, setTotalCount } = pagination;
+
   useEffect(() => {
     async function fetchPlayers() {
       try {
         setLoading(true);
         setError(null);
-        const data = await getPlayers();
+        const result = await getPlayersPaginated(
+          paginationState.pageNumber,
+          paginationState.pageSize
+        );
+        
         // Map API data to component Player interface
-        const mappedPlayers: Player[] = data.map((member: ApiMember) => ({
+        const mappedPlayers: Player[] = result.items.map((member: ApiMember) => ({
           id: member.id,
           fullName: member.firstName + " " + member.lastName,
           phoneNumber: member.phoneNumber,
@@ -44,7 +52,9 @@ export default function PlayersPage() {
           insuranceExpiryDate: member.insuranceExpiryDate,
           isInsuranceValid: member.isInsuranceValid,
         }));
+        
         setPlayers(mappedPlayers);
+        setTotalCount(result.totalCount);
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to load players";
@@ -56,7 +66,7 @@ export default function PlayersPage() {
     }
 
     fetchPlayers();
-  }, []);
+  }, [paginationState.pageNumber, paginationState.pageSize, setTotalCount]);
 
   const handleAddClick = () => {
     setDialogOpen(true);
@@ -103,7 +113,16 @@ export default function PlayersPage() {
                 </div>
               </div>
             ) : (
-              <PlayersTable players={players} onAddClick={handleAddClick} />
+              <PlayersTable
+                players={players}
+                onAddClick={handleAddClick}
+                pagination={{
+                  pageNumber: paginationState.pageNumber,
+                  pageSize: paginationState.pageSize,
+                  totalCount: paginationState.totalCount,
+                  onPageChange: setPageNumber,
+                }}
+              />
             )}
           </div>
         </main>

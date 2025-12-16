@@ -1,6 +1,7 @@
 "use client";
 
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Pagination } from "@/components/shared/pagination";
 
 interface Player {
   id: number;
@@ -16,9 +17,15 @@ interface Player {
 interface PlayersTableProps {
   players: Player[];
   onAddClick?: () => void;
+  pagination?: {
+    pageNumber: number;
+    pageSize: number;
+    totalCount: number;
+    onPageChange: (page: number) => void;
+  };
 }
 
-export function PlayersTable({ players, onAddClick }: PlayersTableProps) {
+export function PlayersTable({ players, onAddClick, pagination }: PlayersTableProps) {
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center">
@@ -29,7 +36,7 @@ export function PlayersTable({ players, onAddClick }: PlayersTableProps) {
           </p>
         </div>
         {onAddClick && (
-          <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+          <div className="mt-4 sm:mt-0 sm:mr-16 sm:flex-none">
             <button
               type="button"
               onClick={onAddClick}
@@ -107,6 +114,14 @@ export function PlayersTable({ players, onAddClick }: PlayersTableProps) {
           </div>
         </div>
       </div>
+      {pagination && (
+        <Pagination
+          pageNumber={pagination.pageNumber}
+          pageSize={pagination.pageSize}
+          totalCount={pagination.totalCount}
+          onPageChange={pagination.onPageChange}
+        />
+      )}
     </div>
   );
 }
