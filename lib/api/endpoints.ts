@@ -28,5 +28,9 @@ export const API_ENDPOINTS = {
     PROVINCES: "/province",
     CITIES: (provinceId: string) => `/city/by-province?provinceId=${provinceId}`,
   },
+  PROFILE: {
+    GET: "/profile",
+    UPDATE: "/profile",
+  },
 } as const;
 

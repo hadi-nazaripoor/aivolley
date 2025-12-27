@@ -12,6 +12,7 @@ import { createMember } from "@/lib/api/services/members";
 import { getProvinces, getCitiesByProvinceId } from "@/lib/api/services/locations";
 import type { Province, City, CreateMemberRequest } from "@/lib/api/types";
 import { getImageUrl } from "@/lib/utils/image-url";
+import DatePicker from "../ui/date-picker";
 
 interface CreateMemberDialogProps {
   open: boolean;
@@ -362,13 +363,15 @@ export function CreateMemberDialog({
                 <div className="sm:col-span-3">
                   <UILabel htmlFor="dateOfBirth">تاریخ تولد</UILabel>
                   <div className="mt-2">
-                    <Input
+                  <DatePicker className="col-span-2" placeholder="تاریخ تولد"/>
+
+                    {/* <Input
                       id="dateOfBirth"
                       type="date"
                       {...register("dateOfBirth", {
                         required: "تاریخ تولد الزامی است",
                       })}
-                    />
+                    /> */}
                     {errors.dateOfBirth && (
                       <p className="mt-1 text-sm text-red-600">
                         {errors.dateOfBirth.message}

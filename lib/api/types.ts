@@ -118,3 +118,23 @@ export interface CreateMemberResponse extends BaseResponse {
   data?: ApiMember;
 }
 
+/**
+ * Profile API Types
+ */
+export interface ProfileResponse {
+  firstName: string;
+  lastName: string;
+  fatherName: string;
+  nationalCode: string;
+  dateOfBirth: string; // DateOnly from C# - ISO date string
+  gender: string;
+  avatar: string | null;
+  bornProvinceId: string; // Guid
+  bornCityId: string; // Guid
+  confirmed: boolean;
+}
+
+export interface ProfileApiResponse extends BaseResponse {
+  data?: ProfileResponse;
+}
+

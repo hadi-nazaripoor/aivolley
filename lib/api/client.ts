@@ -18,9 +18,17 @@ export class ApiClient {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
+    // Don't set Content-Type header for FormData - browser will set it with boundary
+    const isFormData = options.body instanceof FormData;
+    const headers: HeadersInit = isFormData
+      ? {}
+      : {
+          "Content-Type": "application/json",
+        };
+
     const config: RequestInit = {
       headers: {
-        "Content-Type": "application/json",
+        ...headers,
         ...options.headers,
       },
       ...options,
@@ -61,10 +69,13 @@ export class ApiClient {
     data?: unknown,
     options?: RequestInit
   ): Promise<T> {
+    // If data is FormData, use it directly; otherwise stringify JSON
+    const body = data instanceof FormData ? data : data ? JSON.stringify(data) : undefined;
+    
     return this.request<T>(endpoint, {
       ...options,
-      method: "PUT",
-      body: data ? JSON.stringify(data) : undefined,
+      method: "POST",
+      body,
     });
   }
 
