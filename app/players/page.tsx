@@ -110,7 +110,7 @@ export default function PlayersPage() {
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       <div className="lg:ps-72">
         <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main className="py-10">
+        <main>
           <div className="max-w-7xl mx-auto">
             <MembersFilter
               onFilterChange={handleFilterChange}
