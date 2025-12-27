@@ -53,16 +53,47 @@ export async function getPlayers(): Promise<ApiMember[]> {
 }
 
 /**
- * Fetch players with pagination
+ * Filter parameters for members list
+ */
+export interface MembersFilterParams {
+  firstName?: string;
+  lastName?: string;
+  nationalCode?: string;
+  gender?: string;
+  bornCityId?: string;
+}
+
+/**
+ * Fetch players with pagination and filters
  */
 export async function getPlayersPaginated(
   pageNumber: number = 1,
-  pageSize: number = 10
+  pageSize: number = 10,
+  filters?: MembersFilterParams
 ): Promise<{ items: ApiMember[]; totalCount: number; pageNumber: number; pageSize: number }> {
   const queryParams = new URLSearchParams({
     pageNumber: pageNumber.toString(),
     pageSize: pageSize.toString(),
   });
+
+  // Add filter parameters if provided
+  if (filters) {
+    if (filters.firstName) {
+      queryParams.append("firstName", filters.firstName);
+    }
+    if (filters.lastName) {
+      queryParams.append("lastName", filters.lastName);
+    }
+    if (filters.nationalCode) {
+      queryParams.append("nationalCode", filters.nationalCode);
+    }
+    if (filters.gender) {
+      queryParams.append("gender", filters.gender);
+    }
+    if (filters.bornCityId) {
+      queryParams.append("bornCityId", filters.bornCityId);
+    }
+  }
   
   const response = await apiClient.get<PaginatedMembersResponse>(
     `${API_ENDPOINTS.MEMBERS.LIST}?${queryParams.toString()}`

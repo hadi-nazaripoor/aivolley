@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
@@ -137,6 +137,10 @@ export default function SettingsPage() {
     confirmed: boolean;
     avatar: string | null;
   } | null>(null);
+  // Track if we're in initial load phase (to distinguish from manual changes)
+  const isInitialLoadRef = useRef(true);
+  // Track if province was set from profile (to know when to auto-select city)
+  const provinceFromProfileRef = useRef(false);
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
@@ -167,7 +171,7 @@ export default function SettingsPage() {
     },
   });
 
-  // Fetch provinces on mount
+  // Load provinces on page load
   useEffect(() => {
     setLoadingProvinces(true);
     getProvinces()
@@ -190,7 +194,7 @@ export default function SettingsPage() {
       setError(null);
       try {
         const profile = await getProfile();
-        
+        console.log(profile);
         // Store profile data for province/city selection
         setProfileData({
           bornProvinceId: profile.bornProvinceId,
@@ -222,43 +226,90 @@ export default function SettingsPage() {
     fetchProfile();
   }, [setValue]);
 
-  // Set selected province when profile and provinces are loaded
+  // Auto-select province from profile when both profile and provinces are ready
   useEffect(() => {
-    if (profileData && profileData.bornProvinceId && provinces.length > 0) {
-      const province = provinces.find((p) => p.id === profileData.bornProvinceId);
-      if (province) {
-        setSelectedProvince(province);
+    // Only auto-select on initial load
+    if (!isInitialLoadRef.current) return;
+    
+    // Wait for both profile data and provinces to be loaded
+    if (profileData && provinces.length > 0 && !loadingProvinces && !loadingProfile) {
+      // If profile has a province, try to select it
+      if (profileData.bornProvinceId && !selectedProvince) {
+        const province = provinces.find((p) => p.id === profileData.bornProvinceId);
+        if (province) {
+          provinceFromProfileRef.current = true;
+          setSelectedProvince(province);
+        } else {
+          // Province not found in list, mark initial load complete
+          isInitialLoadRef.current = false;
+        }
+      } else if (!profileData.bornProvinceId) {
+        // Profile has no province, mark initial load complete
+        isInitialLoadRef.current = false;
       }
     }
-  }, [profileData, provinces]);
+  }, [profileData, provinces, selectedProvince, loadingProvinces, loadingProfile]);
 
-  // Fetch cities when province changes
+  // Load cities when province is selected
   useEffect(() => {
-    if (selectedProvince) {
-      setLoadingCities(true);
-      setSelectedCity(null);
+    if (!selectedProvince) {
       setCities([]);
-      getCitiesByProvinceId(selectedProvince.id)
-        .then((data) => {
-          setCities(data);
-          
-          // Set selected city from profile
-          if (profileData && profileData.bornCityId && data.length > 0) {
-            const city = data.find((c) => c.id === profileData.bornCityId);
-            if (city) {
-              setSelectedCity(city);
-            }
-          }
-        })
-        .catch((err) => {
-          console.error("Error fetching cities:", err);
-          setError("خطا در بارگذاری شهرها");
-        })
-        .finally(() => {
-          setLoadingCities(false);
-        });
+      setSelectedCity(null);
+      return;
     }
-  }, [selectedProvince, profileData]);
+
+    setLoadingCities(true);
+    setSelectedCity(null);
+    setCities([]);
+    
+    getCitiesByProvinceId(selectedProvince.id)
+      .then((data) => {
+        setCities(data);
+      })
+      .catch((err) => {
+        console.error("Error fetching cities:", err);
+        setError("خطا در بارگذاری شهرها");
+      })
+      .finally(() => {
+        setLoadingCities(false);
+      });
+  }, [selectedProvince]);
+
+  // Auto-select city from profile when cities are loaded and province matches profile
+  useEffect(() => {
+    // Only process on initial load
+    if (!isInitialLoadRef.current) return;
+    
+    // If province was set from profile and cities are loaded
+    if (
+      provinceFromProfileRef.current &&
+      cities.length > 0 &&
+      !loadingCities &&
+      selectedProvince?.id === profileData?.bornProvinceId
+    ) {
+      // Try to select city from profile if it exists
+      if (profileData?.bornCityId && !selectedCity) {
+        const city = cities.find((c) => c.id === profileData.bornCityId);
+        if (city) {
+          setSelectedCity(city);
+        }
+      }
+      // Mark initial load as complete after cities are loaded
+      // (whether city was found/selected or not)
+      isInitialLoadRef.current = false;
+      provinceFromProfileRef.current = false;
+    }
+  }, [cities, profileData, selectedProvince, selectedCity, loadingCities]);
+
+  // Handle manual province change
+  const handleProvinceChange = useCallback((province: Province) => {
+    // If this is a manual change (not initial load), reset the flags
+    if (!isInitialLoadRef.current) {
+      provinceFromProfileRef.current = false;
+    }
+    setSelectedProvince(province);
+    // City will be reset automatically by the cities loading effect
+  }, []);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -418,7 +469,7 @@ export default function SettingsPage() {
                         <div className="shrink-0">
                           <CheckCircle aria-hidden="true" className="size-5 text-green-400" />
                         </div>
-                        <div className="ml-3">
+                        <div className="mr-3">
                           <h3 className="text-sm font-medium text-green-800">حساب کاربری تأیید شده</h3>
                           <div className="mt-2 text-sm text-green-700">
                             <p>حساب کاربری شما تأیید شده است و می‌توانید از تمام امکانات استفاده کنید.</p>
@@ -586,7 +637,7 @@ export default function SettingsPage() {
                     <ProvinceSelect
                       provinces={provinces}
                       selected={selectedProvince}
-                      onSelect={setSelectedProvince}
+                      onSelect={handleProvinceChange}
                     />
                   </div>
 

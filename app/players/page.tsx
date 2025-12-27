@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { PlayersTable } from "@/components/features/players-table";
 import { CreateMemberDialog } from "@/components/features/create-member-dialog";
+import { MembersFilter, type MembersFilterValues } from "@/components/features/members-filter";
 import { getPlayersPaginated } from "@/lib/api/services/members";
 import { usePagination } from "@/lib/hooks/use-pagination";
 import type { ApiMember } from "@/lib/api/types";
@@ -27,46 +28,48 @@ export default function PlayersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [filters, setFilters] = useState<MembersFilterValues>({});
 
   const pagination = usePagination(10);
   const { pagination: paginationState, setPageNumber, setTotalCount } = pagination;
 
-  useEffect(() => {
-    async function fetchPlayers() {
-      try {
-        setLoading(true);
-        setError(null);
-        const result = await getPlayersPaginated(
-          paginationState.pageNumber,
-          paginationState.pageSize
-        );
-        
-        // Map API data to component Player interface
-        const mappedPlayers: Player[] = result.items.map((member: ApiMember) => ({
-          id: member.id,
-          fullName: member.firstName + " " + member.lastName,
-          phoneNumber: member.phoneNumber,
-          avatar: getImageUrl(member.avatar),
-          teamName: member.teamName,
-          position: member.position,
-          insuranceExpiryDate: member.insuranceExpiryDate,
-          isInsuranceValid: member.isInsuranceValid,
-        }));
-        
-        setPlayers(mappedPlayers);
-        setTotalCount(result.totalCount);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to load players";
-        setError(errorMessage);
-        console.error("Error fetching players:", err);
-      } finally {
-        setLoading(false);
-      }
+  const fetchPlayers = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await getPlayersPaginated(
+        paginationState.pageNumber,
+        paginationState.pageSize,
+        filters
+      );
+      
+      // Map API data to component Player interface
+      const mappedPlayers: Player[] = result.items.map((member: ApiMember) => ({
+        id: member.id,
+        fullName: member.firstName + " " + member.lastName,
+        phoneNumber: member.phoneNumber,
+        avatar: getImageUrl(member.avatar),
+        teamName: member.teamName,
+        position: member.position,
+        insuranceExpiryDate: member.insuranceExpiryDate,
+        isInsuranceValid: member.isInsuranceValid,
+      }));
+      
+      setPlayers(mappedPlayers);
+      setTotalCount(result.totalCount);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load players";
+      setError(errorMessage);
+      console.error("Error fetching players:", err);
+    } finally {
+      setLoading(false);
     }
+  }, [paginationState.pageNumber, paginationState.pageSize, filters, setTotalCount]);
 
+  useEffect(() => {
     fetchPlayers();
-  }, [paginationState.pageNumber, paginationState.pageSize, setTotalCount]);
+  }, [fetchPlayers]);
 
   const handleAddClick = () => {
     setDialogOpen(true);
@@ -91,6 +94,17 @@ export default function PlayersPage() {
     setPlayers((prev) => [...prev, newPlayer]);
   };
 
+  const handleFilterChange = useCallback((newFilters: MembersFilterValues) => {
+    setFilters(newFilters);
+    // Reset to first page when filters change
+    setPageNumber(1);
+  }, [setPageNumber]);
+
+  const handleClearFilters = useCallback(() => {
+    setFilters({});
+    setPageNumber(1);
+  }, [setPageNumber]);
+
   return (
     <div>
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -98,6 +112,10 @@ export default function PlayersPage() {
         <Header onMenuClick={() => setSidebarOpen(true)} />
         <main className="py-10">
           <div className="max-w-7xl mx-auto">
+            <MembersFilter
+              onFilterChange={handleFilterChange}
+              onClear={handleClearFilters}
+            />
             {loading ? (
               <div className="px-4 sm:px-6 lg:px-8">
                 <div className="text-center py-12">
