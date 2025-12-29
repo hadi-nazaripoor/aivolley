@@ -31,8 +31,8 @@ export default function SettingsLayout({
         <main>
           <h1 className="sr-only">تنظیمات حساب کاربری</h1>
 
-          <div className="mx-auto max-w-7xl pt-16 lg:flex lg:gap-x-16 lg:px-8">
-            <aside className="flex overflow-x-auto border-b border-gray-900/5 py-4 lg:block lg:w-64 lg:flex-none lg:border-0 lg:py-20">
+          <div className="mx-auto max-w-7xl lg:flex lg:gap-x-16 lg:px-8">
+            <aside className="flex overflow-x-auto border-b border-gray-900/5 py-4 lg:block lg:w-64 lg:flex-none lg:border-0 lg:py-6">
               <nav className="flex-none px-4 sm:px-6 lg:px-0">
                 <ul role="list" className="flex gap-x-3 gap-y-1 whitespace-nowrap lg:flex-col">
                   {navigation.map((item) => {
@@ -66,7 +66,7 @@ export default function SettingsLayout({
               </nav>
             </aside>
 
-            <div className="px-4 py-16 sm:px-6 lg:flex-auto lg:px-0 lg:py-20">
+            <div className="px-4 py-4 sm:px-6 lg:flex-auto lg:px-0 lg:py-6">
               {children}
             </div>
           </div>
