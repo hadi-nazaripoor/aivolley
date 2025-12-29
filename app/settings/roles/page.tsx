@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -9,6 +9,8 @@ import { CoachRoleForm } from "./coach";
 import { RefereeRoleForm } from "./referee";
 import { ClubOwnerRoleForm } from "./club-owner";
 import { SupervisorRoleForm } from "./supervisor";
+import { getPlayerMe } from "@/lib/api/services/player";
+import type { PlayerResponse, ApprovalStatus } from "@/lib/api/types";
 
 type RoleStatus = "pending" | "approved" | "rejected";
 
@@ -17,14 +19,29 @@ interface Role {
   name: string;
   claimed: boolean;
   status: RoleStatus;
+  data?: PlayerResponse | null; // Store role-specific data
+}
+
+// Map ApprovalStatus to RoleStatus
+function mapApprovalStatus(status: ApprovalStatus): RoleStatus {
+  switch (status) {
+    case "Pending":
+      return "pending";
+    case "Approved":
+      return "approved";
+    case "Rejected":
+      return "rejected";
+    default:
+      return "pending";
+  }
 }
 
 // All available roles (both claimed and unclaimed)
 const allAvailableRoles: Role[] = [
-  { id: "player", name: "بازیکن", claimed: true, status: "approved" },
-  { id: "coach", name: "مربی", claimed: true, status: "pending" },
-  { id: "club-owner", name: "مالک باشگاه", claimed: true, status: "approved" },
-  { id: "supervisor", name: "سرپرست", claimed: true, status: "rejected" },
+  { id: "player", name: "بازیکن", claimed: false, status: "pending" },
+  { id: "coach", name: "مربی", claimed: false, status: "pending" },
+  { id: "club-owner", name: "مالک باشگاه", claimed: false, status: "pending" },
+  { id: "supervisor", name: "سرپرست", claimed: false, status: "pending" },
   { id: "referee", name: "داور", claimed: false, status: "pending" },
 ];
 
@@ -58,10 +75,21 @@ function RoleStatusBadge({ status }: { status: RoleStatus }) {
   );
 }
 
-function renderRoleForm(roleId: string) {
+function renderRoleForm(
+  roleId: string,
+  roleData?: PlayerResponse | null,
+  onSuccess?: () => void,
+  isNew?: boolean
+) {
   switch (roleId) {
     case "player":
-      return <PlayerRoleForm />;
+      return (
+        <PlayerRoleForm
+          existingData={roleData || null}
+          onSuccess={onSuccess}
+          isNew={isNew}
+        />
+      );
     case "coach":
       return <CoachRoleForm />;
     case "referee":
@@ -78,6 +106,67 @@ function renderRoleForm(roleId: string) {
 export default function RolesPage() {
   const [openRoleId, setOpenRoleId] = useState<string | null>(null);
   const [roles, setRoles] = useState<Role[]>(allAvailableRoles);
+  const [isLoadingPlayer, setIsLoadingPlayer] = useState(true);
+
+  // Load player role on mount
+  useEffect(() => {
+    const loadPlayerRole = async () => {
+      setIsLoadingPlayer(true);
+      try {
+        const playerData = await getPlayerMe();
+        if (playerData) {
+          // Player role exists - mark as claimed and set status
+          setRoles((prevRoles) =>
+            prevRoles.map((role) =>
+              role.id === "player"
+                ? {
+                    ...role,
+                    claimed: true,
+                    status: mapApprovalStatus(playerData.approvalStatus),
+                    data: playerData,
+                  }
+                : role
+            )
+          );
+        } else {
+          // 404 or no data - player doesn't exist yet (normal flow, not an error)
+          // Keep player as unclaimed so it appears in dropdown
+          setRoles((prevRoles) =>
+            prevRoles.map((role) =>
+              role.id === "player"
+                ? {
+                    ...role,
+                    claimed: false,
+                    status: "pending",
+                    data: null,
+                  }
+                : role
+            )
+          );
+        }
+      } catch (error) {
+        // Only log actual errors (not 404s)
+        console.error("Error loading player role:", error);
+        // On error, keep player as unclaimed
+        setRoles((prevRoles) =>
+          prevRoles.map((role) =>
+            role.id === "player"
+              ? {
+                  ...role,
+                  claimed: false,
+                  status: "pending",
+                  data: null,
+                }
+              : role
+          )
+        );
+      } finally {
+        setIsLoadingPlayer(false);
+      }
+    };
+
+    loadPlayerRole();
+  }, []);
 
   const handleRoleToggle = (roleId: string) => {
     setOpenRoleId(openRoleId === roleId ? null : roleId);
@@ -87,10 +176,35 @@ export default function RolesPage() {
     setRoles((prevRoles) =>
       prevRoles.map((role) =>
         role.id === roleId
-          ? { ...role, claimed: true, status: "pending" }
+          ? { ...role, claimed: true, status: "pending", data: null }
           : role
       )
     );
+    // Auto-open the role form when claimed
+    setOpenRoleId(roleId);
+  };
+
+  const handlePlayerSuccess = async () => {
+    // Reload player data after successful create/update
+    try {
+      const playerData = await getPlayerMe();
+      if (playerData) {
+        setRoles((prevRoles) =>
+          prevRoles.map((role) =>
+            role.id === "player"
+              ? {
+                  ...role,
+                  claimed: true,
+                  status: mapApprovalStatus(playerData.approvalStatus),
+                  data: playerData,
+                }
+              : role
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error reloading player role:", error);
+    }
   };
 
   // Filter roles: show only unclaimed in dropdown, only claimed in cards
@@ -178,7 +292,12 @@ export default function RolesPage() {
                       )}
                     >
                       <div className="border-t border-gray-200 px-4 py-4">
-                        {renderRoleForm(role.id)}
+                        {renderRoleForm(
+                          role.id,
+                          role.data,
+                          handlePlayerSuccess,
+                          !role.data // isNew = true if no existing data
+                        )}
                       </div>
                     </div>
                   </div>

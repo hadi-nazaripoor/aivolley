@@ -138,3 +138,51 @@ export interface ProfileApiResponse extends BaseResponse {
   data?: ProfileResponse;
 }
 
+/**
+ * Player Role API Types
+ */
+export enum Handedness {
+  Right = "Right",
+  Left = "Left",
+}
+
+export enum PlayerPositions {
+  OutsideHitter = "OutsideHitter",
+  OppositeHitter = "OppositeHitter",
+  MiddleBlocker = "MiddleBlocker",
+  Setter = "Setter",
+  Libero = "Libero",
+}
+
+export enum ApprovalStatus {
+  Pending = "Pending",
+  Approved = "Approved",
+  Rejected = "Rejected",
+}
+
+export interface PlayerResponse {
+  height: number;
+  weight: number;
+  handedness: Handedness;
+  playerPosition: PlayerPositions;
+  approvalStatus: ApprovalStatus;
+}
+
+export interface PlayerApiResponse extends BaseResponse {
+  data?: PlayerResponse;
+}
+
+export interface CreatePlayerRequest {
+  height: number;
+  weight: number;
+  handedness: Handedness;
+  playerPosition: PlayerPositions;
+}
+
+export interface UpdatePlayerRequest {
+  height: number;
+  weight: number;
+  handedness: Handedness;
+  playerPosition: PlayerPositions;
+}
+

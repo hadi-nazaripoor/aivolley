@@ -38,7 +38,11 @@ export class ApiClient {
       const response = await fetch(url, config);
 
       if (!response.ok) {
-        throw new Error(`API Error: ${response.statusText}`);
+        // Create error with status code for proper handling
+        const error: any = new Error(`API Error: ${response.statusText}`);
+        error.status = response.status;
+        error.response = response;
+        throw error;
       }
 
       return await response.json();
@@ -74,7 +78,7 @@ export class ApiClient {
     
     return this.request<T>(endpoint, {
       ...options,
-      method: "POST",
+      method: "PUT",
       body,
     });
   }
