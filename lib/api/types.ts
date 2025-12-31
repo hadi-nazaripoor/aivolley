@@ -186,3 +186,39 @@ export interface UpdatePlayerRequest {
   playerPosition: PlayerPositions;
 }
 
+/**
+ * Coach Role API Types
+ */
+export enum CoachingLevels {
+  Beginner = "Beginner",
+  AssistantCoach = "AssistantCoach",
+  Level3 = "Level3",
+  Level2 = "Level2",
+  Level1 = "Level1",
+  NationalCoach = "NationalCoach",
+  InternationalCoach = "InternationalCoach",
+}
+
+export interface CoachResponse {
+  coachingLevel: CoachingLevels;
+  coachingCertificateIssuedAt: string; // ISO date string (DateOnly from C#)
+  coachingCertificateImage: string;
+  approvalStatus: ApprovalStatus;
+}
+
+export interface CoachApiResponse extends BaseResponse {
+  data?: CoachResponse;
+}
+
+export interface CreateCoachRequest {
+  coachingLevel: CoachingLevels;
+  coachingCertificateIssuedAt: string; // ISO date string
+  coachingCertificateImage?: File; // Optional file upload
+}
+
+export interface UpdateCoachRequest {
+  coachingLevel: CoachingLevels;
+  coachingCertificateIssuedAt: string; // ISO date string
+  coachingCertificateImage?: File; // Optional file upload - only if user uploads new one
+}
+

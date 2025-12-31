@@ -102,7 +102,7 @@ export async function updatePlayer(data: UpdatePlayerRequest): Promise<void> {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await apiClient.put<BaseResponse>(
+  const response = await apiClient.post<BaseResponse>(
     API_ENDPOINTS.PLAYER.UPDATE,
     data,
     { headers }

@@ -37,5 +37,10 @@ export const API_ENDPOINTS = {
     CREATE: "/player",
     UPDATE: "/player",
   },
+  COACH: {
+    GET_ME: "/coach/me",
+    CREATE: "/coach",
+    UPDATE: "/coach",
+  },
 } as const;
 

@@ -10,7 +10,8 @@ import { RefereeRoleForm } from "./referee";
 import { ClubOwnerRoleForm } from "./club-owner";
 import { SupervisorRoleForm } from "./supervisor";
 import { getPlayerMe } from "@/lib/api/services/player";
-import type { PlayerResponse, ApprovalStatus } from "@/lib/api/types";
+import { getCoachMe } from "@/lib/api/services/coach";
+import type { PlayerResponse, CoachResponse, ApprovalStatus } from "@/lib/api/types";
 
 type RoleStatus = "pending" | "approved" | "rejected";
 
@@ -19,7 +20,7 @@ interface Role {
   name: string;
   claimed: boolean;
   status: RoleStatus;
-  data?: PlayerResponse | null; // Store role-specific data
+  data?: PlayerResponse | CoachResponse | null; // Store role-specific data (union type for different roles)
 }
 
 // Map ApprovalStatus to RoleStatus
@@ -77,7 +78,7 @@ function RoleStatusBadge({ status }: { status: RoleStatus }) {
 
 function renderRoleForm(
   roleId: string,
-  roleData?: PlayerResponse | null,
+  roleData?: PlayerResponse | CoachResponse | null,
   onSuccess?: () => void,
   isNew?: boolean
 ) {
@@ -85,13 +86,19 @@ function renderRoleForm(
     case "player":
       return (
         <PlayerRoleForm
-          existingData={roleData || null}
+          existingData={(roleData as PlayerResponse) || null}
           onSuccess={onSuccess}
           isNew={isNew}
         />
       );
     case "coach":
-      return <CoachRoleForm />;
+      return (
+        <CoachRoleForm
+          existingData={(roleData as CoachResponse) || null}
+          onSuccess={onSuccess}
+          isNew={isNew}
+        />
+      );
     case "referee":
       return <RefereeRoleForm />;
     case "club-owner":
@@ -106,16 +113,17 @@ function renderRoleForm(
 export default function RolesPage() {
   const [openRoleId, setOpenRoleId] = useState<string | null>(null);
   const [roles, setRoles] = useState<Role[]>(allAvailableRoles);
-  const [isLoadingPlayer, setIsLoadingPlayer] = useState(true);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(true);
 
-  // Load player role on mount
+  // Load all roles on mount
   useEffect(() => {
-    const loadPlayerRole = async () => {
-      setIsLoadingPlayer(true);
+    const loadRoles = async () => {
+      setIsLoadingRoles(true);
+      
+      // Load player role
       try {
         const playerData = await getPlayerMe();
         if (playerData) {
-          // Player role exists - mark as claimed and set status
           setRoles((prevRoles) =>
             prevRoles.map((role) =>
               role.id === "player"
@@ -129,8 +137,6 @@ export default function RolesPage() {
             )
           );
         } else {
-          // 404 or no data - player doesn't exist yet (normal flow, not an error)
-          // Keep player as unclaimed so it appears in dropdown
           setRoles((prevRoles) =>
             prevRoles.map((role) =>
               role.id === "player"
@@ -145,9 +151,7 @@ export default function RolesPage() {
           );
         }
       } catch (error) {
-        // Only log actual errors (not 404s)
         console.error("Error loading player role:", error);
-        // On error, keep player as unclaimed
         setRoles((prevRoles) =>
           prevRoles.map((role) =>
             role.id === "player"
@@ -160,12 +164,58 @@ export default function RolesPage() {
               : role
           )
         );
-      } finally {
-        setIsLoadingPlayer(false);
       }
+
+      // Load coach role
+      try {
+        const coachData = await getCoachMe();
+        if (coachData) {
+          setRoles((prevRoles) =>
+            prevRoles.map((role) =>
+              role.id === "coach"
+                ? {
+                    ...role,
+                    claimed: true,
+                    status: mapApprovalStatus(coachData.approvalStatus),
+                    data: coachData,
+                  }
+                : role
+            )
+          );
+        } else {
+          setRoles((prevRoles) =>
+            prevRoles.map((role) =>
+              role.id === "coach"
+                ? {
+                    ...role,
+                    claimed: false,
+                    status: "pending",
+                    data: null,
+                  }
+                : role
+            )
+          );
+        }
+      } catch (error) {
+        console.error("Error loading coach role:", error);
+        setRoles((prevRoles) =>
+          prevRoles.map((role) =>
+            role.id === "coach"
+              ? {
+                  ...role,
+                  claimed: false,
+                  status: "pending",
+                  data: null,
+                }
+              : role
+          )
+        );
+      }
+
+      setIsLoadingRoles(false);
     };
 
-    loadPlayerRole();
+    loadRoles();
   }, []);
 
   const handleRoleToggle = (roleId: string) => {
@@ -204,6 +254,29 @@ export default function RolesPage() {
       }
     } catch (error) {
       console.error("Error reloading player role:", error);
+    }
+  };
+
+  const handleCoachSuccess = async () => {
+    // Reload coach data after successful create/update
+    try {
+      const coachData = await getCoachMe();
+      if (coachData) {
+        setRoles((prevRoles) =>
+          prevRoles.map((role) =>
+            role.id === "coach"
+              ? {
+                  ...role,
+                  claimed: true,
+                  status: mapApprovalStatus(coachData.approvalStatus),
+                  data: coachData,
+                }
+              : role
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error reloading coach role:", error);
     }
   };
 
@@ -295,7 +368,7 @@ export default function RolesPage() {
                         {renderRoleForm(
                           role.id,
                           role.data,
-                          handlePlayerSuccess,
+                          role.id === "player" ? handlePlayerSuccess : role.id === "coach" ? handleCoachSuccess : undefined,
                           !role.data // isNew = true if no existing data
                         )}
                       </div>
