@@ -23,11 +23,14 @@ import {
   Sun,
   Moon,
   X,
+  Building2,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { RoleSwitcher } from "@/components/shared/role-switcher";
+import { useAuth } from "@/lib/contexts/auth-context";
 
 const navigation = [
   { name: "خانه", href: "#", icon: Home, current: true },
@@ -64,6 +67,7 @@ interface SidebarProps {
 
 function SidebarContent() {
   const { theme, toggleTheme } = useTheme();
+  const { hasRole } = useAuth();
 
   return (
     <div className="flex grow flex-col gap-y-5 overflow-y-auto border-e border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 pb-4 lg:border-e scrollbar-hide">
@@ -98,6 +102,27 @@ function SidebarContent() {
                   </a>
                 </li>
               ))}
+              {/* My Clubs - Only visible to ClubOwner role */}
+              {hasRole("ClubOwner") && (
+                <li>
+                  <Link
+                    href="/clubs"
+                    className={cn(
+                      "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400",
+                      "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold"
+                    )}
+                  >
+                    <Building2
+                      aria-hidden="true"
+                      className={cn(
+                        "text-gray-400 dark:text-gray-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400",
+                        "size-6 shrink-0"
+                      )}
+                    />
+                    باشگاه‌های من
+                  </Link>
+                </li>
+              )}
             </ul>
           </li>
 

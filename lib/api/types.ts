@@ -222,3 +222,68 @@ export interface UpdateCoachRequest {
   coachingCertificateImage?: File; // Optional file upload - only if user uploads new one
 }
 
+/**
+ * Club Owner Role API Types
+ */
+export interface ClubOwnerResponse {
+  approvalStatus: ApprovalStatus;
+}
+
+export interface ClubOwnerApiResponse extends BaseResponse {
+  data?: ClubOwnerResponse;
+}
+
+export interface CreateClubOwnerRequest {
+  // No fields required - empty body
+}
+
+/**
+ * Club Types Enum
+ */
+export enum ClubTypes {
+  Public = "Public",
+  Private = "Private",
+  Academy = "Academy",
+  University = "University",
+}
+
+/**
+ * Club API Types
+ */
+export interface ClubResponse {
+  id: string; // Guid
+  name: string;
+  ownerId: string; // Guid
+  cityId: string; // Guid
+  type: ClubTypes;
+  websiteUrl: string | null;
+  phoneNumber: string | null;
+  address: string | null;
+  logo: string | null;
+  approvalStatus: ApprovalStatus;
+}
+
+export interface ClubApiResponse extends BaseResponse {
+  data?: ClubResponse;
+}
+
+export interface PaginatedClubsResponse extends BaseResponse {
+  data?: {
+    items: ClubResponse[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+  };
+}
+
+export interface CreateOrUpdateClubRequest {
+  id?: string | null; // Guid - null for create, set for update
+  name: string;
+  cityId: string; // Guid
+  type: ClubTypes;
+  websiteUrl?: string | null;
+  phoneNumber?: string | null;
+  address?: string | null;
+  logo?: File; // Optional file upload
+}
+

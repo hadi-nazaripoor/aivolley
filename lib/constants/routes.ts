@@ -12,6 +12,7 @@ export const ROUTES = {
   DASHBOARD: "/dashboard",
   SETTINGS: "/settings",
   PLAYERS: "/players",
+  CLUBS: "/clubs",
 } as const;
 
 export type Route = (typeof ROUTES)[keyof typeof ROUTES];

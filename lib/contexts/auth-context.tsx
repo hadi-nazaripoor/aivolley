@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/lib/constants/routes";
 import { login as loginApi, register as registerApi } from "@/lib/api/services/auth";
+import { extractRolesFromToken } from "@/lib/utils/jwt";
 
 interface User {
   id: string | number;
@@ -15,11 +16,13 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  roles: string[];
   isLoading: boolean;
   login: (phoneNumber: string, password: string) => Promise<void>;
   register: (phoneNumber: string, firstName: string, lastName: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  hasRole: (role: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,6 +31,7 @@ const STORAGE_KEY = "auth_user";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -36,7 +40,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const storedUser = localStorage.getItem(STORAGE_KEY);
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        // Extract roles from token
+        if (userData?.token) {
+          const extractedRoles = extractRolesFromToken(userData.token);
+          setRoles(extractedRoles);
+        }
       }
     } catch (error) {
       console.error("Error loading user from storage:", error);
@@ -66,6 +76,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       setUser(userData);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+      
+      // Extract roles from token
+      if (response.token) {
+        const extractedRoles = extractRolesFromToken(response.token);
+        setRoles(extractedRoles);
+      }
       
       // Redirect to home
       router.push(ROUTES.HOME);
@@ -99,6 +115,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userData);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
       
+      // Extract roles from token
+      if (response.token) {
+        const extractedRoles = extractRolesFromToken(response.token);
+        setRoles(extractedRoles);
+      }
+      
       // Redirect to home
       router.push(ROUTES.HOME);
     } catch (error) {
@@ -109,17 +131,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(() => {
     setUser(null);
+    setRoles([]);
     localStorage.removeItem(STORAGE_KEY);
     router.push(ROUTES.HOME);
   }, [router]);
 
+  const hasRole = useCallback((role: string) => {
+    return roles.includes(role);
+  }, [roles]);
+
   const value: AuthContextType = {
     user,
+    roles,
     isLoading,
     login,
     register,
     logout,
     isAuthenticated: !!user,
+    hasRole,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

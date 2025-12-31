@@ -42,5 +42,15 @@ export const API_ENDPOINTS = {
     CREATE: "/coach",
     UPDATE: "/coach",
   },
+  CLUB_OWNER: {
+    GET_ME: "/club-owner/me",
+    CREATE: "/club-owner",
+  },
+  CLUBS: {
+    LIST: "/club",
+    GET_BY_ID: (id: string) => `/club/${id}`,
+    CREATE: "/club",
+    UPDATE: "/club",
+  },
 } as const;
 

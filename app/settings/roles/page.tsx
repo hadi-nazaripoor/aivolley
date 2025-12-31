@@ -11,7 +11,8 @@ import { ClubOwnerRoleForm } from "./club-owner";
 import { SupervisorRoleForm } from "./supervisor";
 import { getPlayerMe } from "@/lib/api/services/player";
 import { getCoachMe } from "@/lib/api/services/coach";
-import type { PlayerResponse, CoachResponse, ApprovalStatus } from "@/lib/api/types";
+import { getClubOwnerMe } from "@/lib/api/services/club-owner";
+import type { PlayerResponse, CoachResponse, ClubOwnerResponse, ApprovalStatus } from "@/lib/api/types";
 
 type RoleStatus = "pending" | "approved" | "rejected";
 
@@ -20,7 +21,7 @@ interface Role {
   name: string;
   claimed: boolean;
   status: RoleStatus;
-  data?: PlayerResponse | CoachResponse | null; // Store role-specific data (union type for different roles)
+  data?: PlayerResponse | CoachResponse | ClubOwnerResponse | null; // Store role-specific data (union type for different roles)
 }
 
 // Map ApprovalStatus to RoleStatus
@@ -78,7 +79,7 @@ function RoleStatusBadge({ status }: { status: RoleStatus }) {
 
 function renderRoleForm(
   roleId: string,
-  roleData?: PlayerResponse | CoachResponse | null,
+  roleData?: PlayerResponse | CoachResponse | ClubOwnerResponse | null,
   onSuccess?: () => void,
   isNew?: boolean
 ) {
@@ -99,10 +100,16 @@ function renderRoleForm(
           isNew={isNew}
         />
       );
+    case "club-owner":
+      return (
+        <ClubOwnerRoleForm
+          existingData={(roleData as ClubOwnerResponse) || null}
+          onSuccess={onSuccess}
+          isNew={isNew}
+        />
+      );
     case "referee":
       return <RefereeRoleForm />;
-    case "club-owner":
-      return <ClubOwnerRoleForm />;
     case "supervisor":
       return <SupervisorRoleForm />;
     default:
@@ -212,6 +219,52 @@ export default function RolesPage() {
         );
       }
 
+      // Load club owner role
+      try {
+        const clubOwnerData = await getClubOwnerMe();
+        if (clubOwnerData) {
+          setRoles((prevRoles) =>
+            prevRoles.map((role) =>
+              role.id === "club-owner"
+                ? {
+                    ...role,
+                    claimed: true,
+                    status: mapApprovalStatus(clubOwnerData.approvalStatus),
+                    data: clubOwnerData,
+                  }
+                : role
+            )
+          );
+        } else {
+          setRoles((prevRoles) =>
+            prevRoles.map((role) =>
+              role.id === "club-owner"
+                ? {
+                    ...role,
+                    claimed: false,
+                    status: "pending",
+                    data: null,
+                  }
+                : role
+            )
+          );
+        }
+      } catch (error) {
+        console.error("Error loading club owner role:", error);
+        setRoles((prevRoles) =>
+          prevRoles.map((role) =>
+            role.id === "club-owner"
+              ? {
+                  ...role,
+                  claimed: false,
+                  status: "pending",
+                  data: null,
+                }
+              : role
+          )
+        );
+      }
+
       setIsLoadingRoles(false);
     };
 
@@ -277,6 +330,29 @@ export default function RolesPage() {
       }
     } catch (error) {
       console.error("Error reloading coach role:", error);
+    }
+  };
+
+  const handleClubOwnerSuccess = async () => {
+    // Reload club owner data after successful create
+    try {
+      const clubOwnerData = await getClubOwnerMe();
+      if (clubOwnerData) {
+        setRoles((prevRoles) =>
+          prevRoles.map((role) =>
+            role.id === "club-owner"
+              ? {
+                  ...role,
+                  claimed: true,
+                  status: mapApprovalStatus(clubOwnerData.approvalStatus),
+                  data: clubOwnerData,
+                }
+              : role
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error reloading club owner role:", error);
     }
   };
 
@@ -368,7 +444,13 @@ export default function RolesPage() {
                         {renderRoleForm(
                           role.id,
                           role.data,
-                          role.id === "player" ? handlePlayerSuccess : role.id === "coach" ? handleCoachSuccess : undefined,
+                          role.id === "player"
+                            ? handlePlayerSuccess
+                            : role.id === "coach"
+                            ? handleCoachSuccess
+                            : role.id === "club-owner"
+                            ? handleClubOwnerSuccess
+                            : undefined,
                           !role.data // isNew = true if no existing data
                         )}
                       </div>
