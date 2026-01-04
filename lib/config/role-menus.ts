@@ -11,6 +11,7 @@ import {
   BarChart3,
   Settings,
   Lock,
+  FileText,
 } from "lucide-react";
 import { ROUTES } from "@/lib/constants/routes";
 import { SystemRoles } from "@/lib/contexts/role-context";
@@ -115,6 +116,16 @@ export const ROLE_MENUS: RoleMenuConfig[] = [
         label: "داشبورد",
         path: ROUTES.DASHBOARD,
         icon: User,
+      },
+    ],
+  },
+  {
+    role: SystemRoles.NewsPublisher,
+    items: [
+      {
+        label: "خبرهای من",
+        path: "/dashboard/news-publisher/news",
+        icon: FileText,
       },
     ],
   },

@@ -52,5 +52,9 @@ export const API_ENDPOINTS = {
     CREATE: "/club",
     UPDATE: "/club",
   },
+  NEWS: {
+    MINE: "/news/mine",
+    CREATE: "/news",
+  },
 } as const;
 

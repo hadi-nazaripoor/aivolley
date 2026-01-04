@@ -287,3 +287,84 @@ export interface CreateOrUpdateClubRequest {
   logo?: File; // Optional file upload
 }
 
+/**
+ * News Types Enum
+ */
+export enum NewsTypes {
+  News = "News",
+  Announcement = "Announcement",
+  Video = "Video",
+  Podcast = "Podcast",
+  Summary = "Summary",
+  // Add other types as needed
+}
+
+/**
+ * News Locality Types Enum
+ */
+export enum NewsLocalityTypes {
+  National = "National",
+  Provincial = "Provincial",
+  City = "City",
+}
+
+/**
+ * News API Types
+ */
+export interface SummarizedNewsResponse {
+  id: string;
+  title: string;
+  shortDescription: string;
+  dateTime: string;
+  thumbImage: string;
+  type: NewsTypes;
+  locality: NewsLocalityTypes;
+  relatedCityId?: string | null;
+}
+
+export interface PaginatedNewsResponse extends BaseResponse {
+  data?: {
+    items: SummarizedNewsResponse[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+  };
+}
+
+/**
+ * News Content Block Types
+ */
+export enum NewsContentBlockType {
+  Text = "Text",
+  Image = "Image",
+  Video = "Video",
+}
+
+/**
+ * Create News Content Block Request
+ */
+export interface CreateNewsContentBlockRequest {
+  Id: string; // Empty Guid for new blocks
+  Type: NewsContentBlockType;
+  Order: number;
+  Text?: string; // Only for Text type
+  ImageFile?: File; // Only for Image type
+  VideoFile?: File; // Only for Video type
+}
+
+/**
+ * Create News Request
+ */
+export interface CreateNewsRequest {
+  Title: string;
+  Slug: string;
+  ShortDescription: string;
+  DateTime: string; // ISO date string
+  ThumbImage: File;
+  Type: NewsTypes;
+  Locality: NewsLocalityTypes;
+  RelatedCityId?: string | null; // Only if Locality === City
+  IsPinned: boolean;
+  Blocks: CreateNewsContentBlockRequest[];
+}
+
