@@ -70,7 +70,7 @@ export function ClubsTable({ clubs, onAddClick, pagination }: ClubsTableProps) {
   const router = useRouter();
 
   const handleClubClick = (clubId: string) => {
-    router.push(`/clubs/${clubId}`);
+    router.push(`/dashboard/club-owner/clubs/${clubId}`);
   };
 
   return (
@@ -186,7 +186,7 @@ export function ClubsTable({ clubs, onAddClick, pagination }: ClubsTableProps) {
                     </td>
                     <td className="relative py-5 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
                       <a
-                        href={`/clubs/${club.id}`}
+                        href={`/dashboard/club-owner/clubs/${club.id}`}
                         onClick={(e) => {
                           e.preventDefault();
                           handleClubClick(club.id);

@@ -3,8 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { Sidebar } from "@/components/layout/sidebar";
-import { Header } from "@/components/layout/header";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -76,7 +74,7 @@ function CitySelect({ cities, selected, onSelect, disabled }: { cities: City[]; 
             {selected ? selected.name : "شهر را انتخاب کنید"}
           </span>
           <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2">
-            <ChevronsUpDown aria-hidden="true" className="size-5 text-gray-400" />
+            <ChevronsUpDown aria-hidden={true} className="size-5 text-gray-400" />
           </span>
         </ListboxButton>
         <ListboxOptions
@@ -96,7 +94,7 @@ function CitySelect({ cities, selected, onSelect, disabled }: { cities: City[]; 
                   </span>
                   {selected && (
                     <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 data-[focus]:text-white">
-                      <Check aria-hidden="true" className="size-5" />
+                      <Check aria-hidden={true} className="size-5" />
                     </span>
                   )}
                 </>
@@ -116,7 +114,7 @@ function ClubTypeSelect({ selected, onSelect }: { selected: ClubTypes; onSelect:
         <ListboxButton className="relative w-full cursor-default rounded-md bg-white py-2 pr-3 pl-10 text-right text-gray-900 ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm/6">
           <span className="block truncate">{clubTypeLabels[selected]}</span>
           <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2">
-            <ChevronsUpDown aria-hidden="true" className="size-5 text-gray-400" />
+            <ChevronsUpDown aria-hidden={true} className="size-5 text-gray-400" />
           </span>
         </ListboxButton>
         <ListboxOptions
@@ -136,7 +134,7 @@ function ClubTypeSelect({ selected, onSelect }: { selected: ClubTypes; onSelect:
                   </span>
                   {selected && (
                     <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 data-[focus]:text-white">
-                      <Check aria-hidden="true" className="size-5" />
+                      <Check aria-hidden={true} className="size-5" />
                     </span>
                   )}
                 </>
@@ -156,7 +154,6 @@ export default function ClubFormPage() {
   const clubId = params?.id as string | undefined;
   const isEditMode = clubId && clubId !== "new";
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [loading, setLoading] = useState(isEditMode);
@@ -199,7 +196,7 @@ export default function ClubFormPage() {
   // Check if user has ClubOwner role
   useEffect(() => {
     if (!authLoading && !hasRole("ClubOwner")) {
-      router.push("/");
+      router.push("/dashboard");
     }
   }, [hasRole, authLoading, router]);
 
@@ -400,7 +397,7 @@ export default function ClubFormPage() {
 
       // Redirect to clubs list after a short delay
       setTimeout(() => {
-        router.push("/clubs");
+        router.push("/dashboard/club-owner/clubs");
       }, 1000);
     } catch (err) {
       const errorMessage =
@@ -417,19 +414,11 @@ export default function ClubFormPage() {
 
   if (authLoading || loading) {
     return (
-      <div>
-        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <div className="lg:ps-72">
-          <Header onMenuClick={() => setSidebarOpen(true)} />
-          <main>
-            <div className="max-w-7xl mx-auto">
-              <div className="px-4 sm:px-6 lg:px-8 py-12">
-                <div className="text-center">
-                  <p className="text-sm text-gray-500">در حال بارگذاری...</p>
-                </div>
-              </div>
-            </div>
-          </main>
+      <div className="max-w-7xl mx-auto">
+        <div className="px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
+            <p className="text-sm text-gray-500">در حال بارگذاری...</p>
+          </div>
         </div>
       </div>
     );
@@ -440,197 +429,189 @@ export default function ClubFormPage() {
   }
 
   return (
-    <div>
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-      <div className="lg:ps-72">
-        <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main>
-          <div className="max-w-7xl mx-auto">
-            <div className="px-4 sm:px-6 lg:px-8 py-8">
-              <div className="mb-6">
-                <h1 className="text-2xl font-semibold text-gray-900">
-                  {isEditMode ? "ویرایش باشگاه" : "ایجاد باشگاه جدید"}
-                </h1>
-                {isEditMode && clubData && (
-                  <div className="mt-2">
-                    <ApprovalStatusBadge status={clubData.approvalStatus} />
+    <div className="max-w-7xl mx-auto">
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-gray-900">
+            {isEditMode ? "ویرایش باشگاه" : "ایجاد باشگاه جدید"}
+          </h1>
+          {isEditMode && clubData && (
+            <div className="mt-2">
+              <ApprovalStatusBadge status={clubData.approvalStatus} />
+            </div>
+          )}
+        </div>
+
+        {notification && (
+          <div className="mb-6">
+            <Notification
+              type={notification.type}
+              message={notification.message}
+              onDismiss={() => setNotification(null)}
+            />
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+            {/* Name */}
+            <div className="sm:col-span-3">
+              <Label htmlFor="name">نام باشگاه *</Label>
+              <div className="mt-2">
+                <Input
+                  id="name"
+                  type="text"
+                  {...register("name", { required: "نام باشگاه الزامی است" })}
+                  className={errors.name ? "ring-red-600" : ""}
+                />
+                {errors.name && (
+                  <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                )}
+              </div>
+            </div>
+
+            {/* City */}
+            <div className="sm:col-span-3">
+              <Label htmlFor="city">شهر *</Label>
+              <div className="mt-2 space-y-2">
+                <Listbox value={selectedProvince} onChange={setSelectedProvince} disabled={loadingProvinces}>
+                  <div className="relative">
+                    <ListboxButton className="relative w-full cursor-default rounded-md bg-white py-2 pr-3 pl-10 text-right text-gray-900 ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 disabled:bg-gray-50 disabled:text-gray-500 disabled:ring-gray-200 sm:text-sm/6">
+                      <span className="block truncate">
+                        {selectedProvince ? selectedProvince.name : "استان را انتخاب کنید"}
+                      </span>
+                      <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2">
+                        <ChevronsUpDown aria-hidden={true} className="size-5 text-gray-400" />
+                      </span>
+                    </ListboxButton>
+                    <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                      {provinces.map((province) => (
+                        <ListboxOption
+                          key={province.id}
+                          value={province}
+                          className="relative cursor-default select-none py-2 pr-10 pl-4 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white"
+                        >
+                          {({ selected }) => (
+                            <>
+                              <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
+                                {province.name}
+                              </span>
+                              {selected && (
+                                <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 data-[focus]:text-white">
+                                  <Check aria-hidden={true} className="size-5" />
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </ListboxOption>
+                      ))}
+                    </ListboxOptions>
+                  </div>
+                </Listbox>
+                <CitySelect
+                  cities={cities}
+                  selected={selectedCity}
+                  onSelect={setSelectedCity}
+                  disabled={!selectedProvince || loadingCities}
+                />
+                {!selectedCity && selectedProvince && (
+                  <p className="text-sm text-red-600">لطفاً شهر را انتخاب کنید</p>
+                )}
+              </div>
+            </div>
+
+            {/* Club Type */}
+            <div className="sm:col-span-3">
+              <Label htmlFor="type">نوع باشگاه *</Label>
+              <div className="mt-2">
+                <ClubTypeSelect selected={selectedType} onSelect={(type) => setValue("type", type)} />
+              </div>
+            </div>
+
+            {/* Phone Number */}
+            <div className="sm:col-span-3">
+              <Label htmlFor="phoneNumber">شماره تلفن</Label>
+              <div className="mt-2">
+                <Input
+                  id="phoneNumber"
+                  type="tel"
+                  {...register("phoneNumber")}
+                />
+              </div>
+            </div>
+
+            {/* Website URL */}
+            <div className="sm:col-span-3">
+              <Label htmlFor="websiteUrl">آدرس وب‌سایت</Label>
+              <div className="mt-2">
+                <Input
+                  id="websiteUrl"
+                  type="url"
+                  {...register("websiteUrl")}
+                />
+              </div>
+            </div>
+
+            {/* Address */}
+            <div className="sm:col-span-6">
+              <Label htmlFor="address">آدرس</Label>
+              <div className="mt-2">
+                <Input
+                  id="address"
+                  type="text"
+                  {...register("address")}
+                />
+              </div>
+            </div>
+
+            {/* Logo Upload */}
+            <div className="sm:col-span-6">
+              <Label htmlFor="logo">لوگو باشگاه</Label>
+              <div className="mt-2">
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={handleLogoClick}
+                  className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-xs hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                >
+                  {logoPreview ? "تغییر تصویر" : "انتخاب تصویر"}
+                </button>
+                {logoPreview && (
+                  <div className="mt-4">
+                    <img
+                      src={logoPreview}
+                      alt="Logo preview"
+                      className="h-32 w-32 rounded-lg object-cover"
+                    />
                   </div>
                 )}
               </div>
-
-              {notification && (
-                <div className="mb-6">
-                  <Notification
-                    type={notification.type}
-                    message={notification.message}
-                    onDismiss={() => setNotification(null)}
-                  />
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
-                  {/* Name */}
-                  <div className="sm:col-span-3">
-                    <Label htmlFor="name">نام باشگاه *</Label>
-                    <div className="mt-2">
-                      <Input
-                        id="name"
-                        type="text"
-                        {...register("name", { required: "نام باشگاه الزامی است" })}
-                        className={errors.name ? "ring-red-600" : ""}
-                      />
-                      {errors.name && (
-                        <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* City */}
-                  <div className="sm:col-span-3">
-                    <Label htmlFor="city">شهر *</Label>
-                    <div className="mt-2 space-y-2">
-                      <Listbox value={selectedProvince} onChange={setSelectedProvince} disabled={loadingProvinces}>
-                        <div className="relative">
-                          <ListboxButton className="relative w-full cursor-default rounded-md bg-white py-2 pr-3 pl-10 text-right text-gray-900 ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 disabled:bg-gray-50 disabled:text-gray-500 disabled:ring-gray-200 sm:text-sm/6">
-                            <span className="block truncate">
-                              {selectedProvince ? selectedProvince.name : "استان را انتخاب کنید"}
-                            </span>
-                            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2">
-                              <ChevronsUpDown aria-hidden="true" className="size-5 text-gray-400" />
-                            </span>
-                          </ListboxButton>
-                          <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
-                            {provinces.map((province) => (
-                              <ListboxOption
-                                key={province.id}
-                                value={province}
-                                className="relative cursor-default select-none py-2 pr-10 pl-4 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white"
-                              >
-                                {({ selected }) => (
-                                  <>
-                                    <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
-                                      {province.name}
-                                    </span>
-                                    {selected && (
-                                      <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 data-[focus]:text-white">
-                                        <Check aria-hidden="true" className="size-5" />
-                                      </span>
-                                    )}
-                                  </>
-                                )}
-                              </ListboxOption>
-                            ))}
-                          </ListboxOptions>
-                        </div>
-                      </Listbox>
-                      <CitySelect
-                        cities={cities}
-                        selected={selectedCity}
-                        onSelect={setSelectedCity}
-                        disabled={!selectedProvince || loadingCities}
-                      />
-                      {!selectedCity && selectedProvince && (
-                        <p className="text-sm text-red-600">لطفاً شهر را انتخاب کنید</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Club Type */}
-                  <div className="sm:col-span-3">
-                    <Label htmlFor="type">نوع باشگاه *</Label>
-                    <div className="mt-2">
-                      <ClubTypeSelect selected={selectedType} onSelect={(type) => setValue("type", type)} />
-                    </div>
-                  </div>
-
-                  {/* Phone Number */}
-                  <div className="sm:col-span-3">
-                    <Label htmlFor="phoneNumber">شماره تلفن</Label>
-                    <div className="mt-2">
-                      <Input
-                        id="phoneNumber"
-                        type="tel"
-                        {...register("phoneNumber")}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Website URL */}
-                  <div className="sm:col-span-3">
-                    <Label htmlFor="websiteUrl">آدرس وب‌سایت</Label>
-                    <div className="mt-2">
-                      <Input
-                        id="websiteUrl"
-                        type="url"
-                        {...register("websiteUrl")}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Address */}
-                  <div className="sm:col-span-6">
-                    <Label htmlFor="address">آدرس</Label>
-                    <div className="mt-2">
-                      <Input
-                        id="address"
-                        type="text"
-                        {...register("address")}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Logo Upload */}
-                  <div className="sm:col-span-6">
-                    <Label htmlFor="logo">لوگو باشگاه</Label>
-                    <div className="mt-2">
-                      <input
-                        ref={logoInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoChange}
-                        className="hidden"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleLogoClick}
-                        className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-xs hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                      >
-                        {logoPreview ? "تغییر تصویر" : "انتخاب تصویر"}
-                      </button>
-                      {logoPreview && (
-                        <div className="mt-4">
-                          <img
-                            src={logoPreview}
-                            alt="Logo preview"
-                            className="h-32 w-32 rounded-lg object-cover"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 disabled:bg-gray-400 sm:mr-3 sm:w-auto"
-                  >
-                    {isSubmitting ? "در حال ذخیره..." : isEditMode ? "ذخیره تغییرات" : "ایجاد باشگاه"}
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => router.push("/clubs")}
-                    className="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                  >
-                    انصراف
-                  </Button>
-                </div>
-              </form>
             </div>
           </div>
-        </main>
+
+          <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 disabled:bg-gray-400 sm:mr-3 sm:w-auto"
+            >
+              {isSubmitting ? "در حال ذخیره..." : isEditMode ? "ذخیره تغییرات" : "ایجاد باشگاه"}
+            </Button>
+            <Button
+              type="button"
+              onClick={() => router.push("/dashboard/club-owner/clubs")}
+              className="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+            >
+              انصراف
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );

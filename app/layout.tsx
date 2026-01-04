@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/contexts/theme-context";
 import { AuthProvider } from "@/lib/contexts/auth-context";
+import { RoleProvider } from "@/lib/contexts/role-context";
 
 const iranSansX = localFont({
   src: [
@@ -40,7 +41,9 @@ export default function RootLayout({
     <html lang="fa" dir="rtl" className={`${iranSansX.variable} h-full`}>
       <body className="h-full font-sans antialiased">
         <ThemeProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <RoleProvider>{children}</RoleProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

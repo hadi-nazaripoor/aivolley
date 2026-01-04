@@ -7,9 +7,10 @@ export default function SettingsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/settings/profile");
+    router.replace("/dashboard/settings/profile");
   }, [router]);
 
   return null;
 }
+
 

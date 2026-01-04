@@ -13,6 +13,8 @@ import { getPlayerMe } from "@/lib/api/services/player";
 import { getCoachMe } from "@/lib/api/services/coach";
 import { getClubOwnerMe } from "@/lib/api/services/club-owner";
 import type { PlayerResponse, CoachResponse, ClubOwnerResponse, ApprovalStatus } from "@/lib/api/types";
+import { useAuth } from "@/lib/contexts/auth-context";
+import { SystemRoles } from "@/lib/contexts/role-context";
 
 type RoleStatus = "pending" | "approved" | "rejected";
 
@@ -39,6 +41,7 @@ function mapApprovalStatus(status: ApprovalStatus): RoleStatus {
 }
 
 // All available roles (both claimed and unclaimed)
+// Note: NewsPublisher is NOT included here as it cannot be requested/claimed
 const allAvailableRoles: Role[] = [
   { id: "player", name: "بازیکن", claimed: false, status: "pending" },
   { id: "coach", name: "مربی", claimed: false, status: "pending" },
@@ -121,6 +124,7 @@ export default function RolesPage() {
   const [openRoleId, setOpenRoleId] = useState<string | null>(null);
   const [roles, setRoles] = useState<Role[]>(allAvailableRoles);
   const [isLoadingRoles, setIsLoadingRoles] = useState(true);
+  const { roles: jwtRoles } = useAuth();
 
   // Load all roles on mount
   useEffect(() => {
@@ -271,6 +275,34 @@ export default function RolesPage() {
     loadRoles();
   }, []);
 
+  // Add NewsPublisher role if present in JWT token (display-only, system-granted)
+  useEffect(() => {
+    const hasNewsPublisher = jwtRoles.includes("NewsPublisher");
+    
+    setRoles((prevRoles) => {
+      const newsPublisherExists = prevRoles.some((role) => role.id === "news-publisher");
+      
+      if (hasNewsPublisher && !newsPublisherExists) {
+        // Add NewsPublisher role
+        return [
+          ...prevRoles,
+          {
+            id: "news-publisher",
+            name: "ناشر خبر",
+            claimed: true,
+            status: "approved" as RoleStatus, // System-granted roles are always approved
+            data: null,
+          },
+        ];
+      } else if (!hasNewsPublisher && newsPublisherExists) {
+        // Remove NewsPublisher if not in JWT token
+        return prevRoles.filter((role) => role.id !== "news-publisher");
+      }
+      
+      return prevRoles;
+    });
+  }, [jwtRoles]);
+
   const handleRoleToggle = (roleId: string) => {
     setOpenRoleId(openRoleId === roleId ? null : roleId);
   };
@@ -357,7 +389,8 @@ export default function RolesPage() {
   };
 
   // Filter roles: show only unclaimed in dropdown, only claimed in cards
-  const unclaimedRoles = roles.filter((role) => !role.claimed);
+  // Exclude NewsPublisher from requestable roles (it's system-granted only)
+  const unclaimedRoles = roles.filter((role) => !role.claimed && role.id !== "news-publisher");
   const claimedRoles = roles.filter((role) => role.claimed);
 
   return (
@@ -424,7 +457,13 @@ export default function RolesPage() {
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-semibold text-gray-900">{role.name}</span>
                         <div>
-                          <RoleStatusBadge status={role.status} />
+                          {role.id === "news-publisher" ? (
+                            <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-blue-50 text-blue-700 ring-blue-600/20">
+                              اعطا شده توسط سیستم
+                            </span>
+                          ) : (
+                            <RoleStatusBadge status={role.status} />
+                          )}
                         </div>
                       </div>
                       {isOpen ? (
@@ -441,17 +480,23 @@ export default function RolesPage() {
                       )}
                     >
                       <div className="border-t border-gray-200 px-4 py-4">
-                        {renderRoleForm(
-                          role.id,
-                          role.data,
-                          role.id === "player"
-                            ? handlePlayerSuccess
-                            : role.id === "coach"
-                            ? handleCoachSuccess
-                            : role.id === "club-owner"
-                            ? handleClubOwnerSuccess
-                            : undefined,
-                          !role.data // isNew = true if no existing data
+                        {role.id === "news-publisher" ? (
+                          <p className="text-sm text-gray-600">
+                            امکان درج و ارسال خبر برای بررسی و انتشار
+                          </p>
+                        ) : (
+                          renderRoleForm(
+                            role.id,
+                            role.data,
+                            role.id === "player"
+                              ? handlePlayerSuccess
+                              : role.id === "coach"
+                              ? handleCoachSuccess
+                              : role.id === "club-owner"
+                              ? handleClubOwnerSuccess
+                              : undefined,
+                            !role.data // isNew = true if no existing data
+                          )
                         )}
                       </div>
                     </div>

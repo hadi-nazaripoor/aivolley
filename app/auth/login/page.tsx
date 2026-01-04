@@ -11,16 +11,19 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/lib/constants/routes";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || ROUTES.SETTINGS;
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      router.push(ROUTES.HOME);
+      router.push(redirectTo);
     }
   }, [isAuthenticated, authLoading, router]);
   const {

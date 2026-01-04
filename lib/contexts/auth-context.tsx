@@ -82,9 +82,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const extractedRoles = extractRolesFromToken(response.token);
         setRoles(extractedRoles);
       }
-      
-      // Redirect to home
-      router.push(ROUTES.HOME);
+      console.log('redirecting to dashboard');
+      // Redirect to settings
+      router.push(ROUTES.SETTINGS);
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -121,8 +121,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setRoles(extractedRoles);
       }
       
-      // Redirect to home
-      router.push(ROUTES.HOME);
+      // Redirect to settings
+      router.push(ROUTES.SETTINGS);
     } catch (error) {
       console.error("Register error:", error);
       throw error;
@@ -133,6 +133,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setRoles([]);
     localStorage.removeItem(STORAGE_KEY);
+    // Clear active role from storage
+    localStorage.removeItem("active_role");
     router.push(ROUTES.HOME);
   }, [router]);
 

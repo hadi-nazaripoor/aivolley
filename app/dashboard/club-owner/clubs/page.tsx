@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Sidebar } from "@/components/layout/sidebar";
-import { Header } from "@/components/layout/header";
 import { ClubsTable } from "@/components/features/clubs-table";
 import { getClubsPaginated } from "@/lib/api/services/clubs";
 import { usePagination } from "@/lib/hooks/use-pagination";
@@ -35,7 +33,6 @@ const clubTypeLabels: Record<ClubTypes, string> = {
 export default function ClubsPage() {
   const router = useRouter();
   const { hasRole, isLoading: authLoading } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [clubs, setClubs] = useState<Club[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +44,7 @@ export default function ClubsPage() {
   useEffect(() => {
     if (!authLoading) {
       if (!hasRole("ClubOwner")) {
-        router.push("/");
+        router.push("/dashboard");
       }
     }
   }, [hasRole, authLoading, router]);
@@ -93,25 +90,17 @@ export default function ClubsPage() {
   }, [fetchClubs, hasRole]);
 
   const handleAddClick = () => {
-    router.push("/clubs/new");
+    router.push("/dashboard/club-owner/clubs/new");
   };
 
   // Don't render if user doesn't have ClubOwner role
   if (authLoading) {
     return (
-      <div>
-        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <div className="lg:ps-72">
-          <Header onMenuClick={() => setSidebarOpen(true)} />
-          <main>
-            <div className="max-w-7xl mx-auto">
-              <div className="px-4 sm:px-6 lg:px-8">
-                <div className="text-center py-12">
-                  <p className="text-sm text-gray-500">در حال بارگذاری...</p>
-                </div>
-              </div>
-            </div>
-          </main>
+      <div className="max-w-7xl mx-auto">
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12">
+            <p className="text-sm text-gray-500">در حال بارگذاری...</p>
+          </div>
         </div>
       </div>
     );
@@ -122,41 +111,33 @@ export default function ClubsPage() {
   }
 
   return (
-    <div>
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-      <div className="lg:ps-72">
-        <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main>
-          <div className="max-w-7xl mx-auto">
-            {loading ? (
-              <div className="px-4 sm:px-6 lg:px-8">
-                <div className="text-center py-12">
-                  <p className="text-sm text-gray-500">در حال بارگذاری...</p>
-                </div>
-              </div>
-            ) : error ? (
-              <div className="px-4 sm:px-6 lg:px-8">
-                <div className="text-center py-12">
-                  <p className="text-sm text-red-600">
-                    خطا در بارگذاری داده‌ها: {error}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <ClubsTable
-                clubs={clubs}
-                onAddClick={handleAddClick}
-                pagination={{
-                  pageNumber: paginationState.pageNumber,
-                  pageSize: paginationState.pageSize,
-                  totalCount: paginationState.totalCount,
-                  onPageChange: setPageNumber,
-                }}
-              />
-            )}
+    <div className="max-w-7xl mx-auto">
+      {loading ? (
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12">
+            <p className="text-sm text-gray-500">در حال بارگذاری...</p>
           </div>
-        </main>
-      </div>
+        </div>
+      ) : error ? (
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12">
+            <p className="text-sm text-red-600">
+              خطا در بارگذاری داده‌ها: {error}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <ClubsTable
+          clubs={clubs}
+          onAddClick={handleAddClick}
+          pagination={{
+            pageNumber: paginationState.pageNumber,
+            pageSize: paginationState.pageSize,
+            totalCount: paginationState.totalCount,
+            onPageChange: setPageNumber,
+          }}
+        />
+      )}
     </div>
   );
 }

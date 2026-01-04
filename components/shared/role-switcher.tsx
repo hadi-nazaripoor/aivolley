@@ -1,47 +1,24 @@
 "use client";
 
-import { useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { ChevronUp, User, Shield, Building2 } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-
-interface Role {
-  id: string;
-  name: string;
-  description: string;
-  icon: typeof User;
-}
-
-const roles: Role[] = [
-  {
-    id: "player",
-    name: "بازیکن",
-    description: "نقش بازیکن",
-    icon: User,
-  },
-  {
-    id: "coach",
-    name: "مربی",
-    description: "نقش مربی",
-    icon: Shield,
-  },
-  {
-    id: "club-owner",
-    name: "مالک باشگاه",
-    description: "نقش مالک باشگاه",
-    icon: Building2,
-  },
-];
+import { useRole } from "@/lib/contexts/role-context";
+import { SystemRoles } from "@/lib/contexts/role-context";
 
 export function RoleSwitcher() {
-  const [selectedRole, setSelectedRole] = useState<Role>(roles[0]);
+  const { availableRoles, activeRole, setActiveRole, isLoading } = useRole();
 
-  const handleRoleChange = (role: Role) => {
-    setSelectedRole(role);
-    // TODO: Add role switching logic here
+  // Don't show switcher if user has only one role or no roles
+  if (isLoading || availableRoles.length <= 1 || !activeRole) {
+    return null;
+  }
+
+  const handleRoleChange = (roleId: SystemRoles) => {
+    setActiveRole(roleId);
   };
 
-  const SelectedIcon = selectedRole.icon;
+  const SelectedIcon = activeRole.icon;
 
   return (
     <div className="flex flex-col w-full">
@@ -56,10 +33,10 @@ export function RoleSwitcher() {
             </span>
             <span className="min-w-0">
               <span className="block truncate text-sm/5 font-medium text-gray-900 dark:text-white">
-                {selectedRole.name}
+                {activeRole.name}
               </span>
               <span className="block truncate text-xs/5 font-normal text-gray-500 dark:text-gray-400">
-                {selectedRole.description}
+                {activeRole.description}
               </span>
             </span>
           </span>
@@ -72,13 +49,13 @@ export function RoleSwitcher() {
           transition
           className="absolute end-0 z-10 mt-2 w-full origin-top-end rounded-md bg-white dark:bg-gray-800 py-1 ring-1 shadow-lg ring-gray-900/5 dark:ring-gray-700 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[enter]:ease-out data-[leave]:duration-75 data-[leave]:ease-in"
         >
-          {roles.map((role) => {
+          {availableRoles.map((role) => {
             const RoleIcon = role.icon;
-            const isSelected = role.id === selectedRole.id;
+            const isSelected = role.id === activeRole.id;
             return (
               <MenuItem key={role.id}>
                 <button
-                  onClick={() => handleRoleChange(role)}
+                  onClick={() => handleRoleChange(role.id)}
                   className={cn(
                     "flex w-full items-center gap-3 px-4 py-2 text-right text-sm/6",
                     isSelected
