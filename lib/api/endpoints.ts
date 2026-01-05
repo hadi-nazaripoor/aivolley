@@ -53,6 +53,7 @@ export const API_ENDPOINTS = {
     UPDATE: "/club",
   },
   NEWS: {
+    LIST: "/news",
     MINE: "/news/mine",
     CREATE: "/news",
   },

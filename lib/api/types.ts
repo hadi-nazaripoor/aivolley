@@ -320,6 +320,8 @@ export interface SummarizedNewsResponse {
   type: NewsTypes;
   locality: NewsLocalityTypes;
   relatedCityId?: string | null;
+  slug?: string;
+  isPinned?: boolean;
 }
 
 export interface PaginatedNewsResponse extends BaseResponse {

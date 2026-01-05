@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Thumbs } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
@@ -8,6 +9,7 @@ import { cn } from "@/lib/utils/cn";
 import "swiper/css";
 import "swiper/css/thumbs";
 import "swiper/css/autoplay";
+import { getImageUrl } from "@/lib/utils/image-url";
 
 interface NewsItem {
   id: number;
@@ -17,6 +19,7 @@ interface NewsItem {
   imageAlt: string;
   category?: string;
   timeAgo?: string;
+  slug?: string;
 }
 
 interface NewsSliderProps {
@@ -117,34 +120,36 @@ export function NewsSlider({ items, className, autoPlayInterval = 5000 }: NewsSl
           >
             {items.map((item) => (
               <SwiperSlide key={item.id} className="!h-auto lg:!h-[226px]">
-                <article className="grid grid-cols-1 lg:grid-cols-2 gap-0 w-full h-full rounded-lg overflow-hidden">
-                  {/* Image - Top on mobile/tablet, Left on desktop */}
-                  <div className="relative w-full h-48 sm:h-56 md:h-64 lg:h-full overflow-hidden">
-                    <img
-                      src={item.image}
-                      alt={item.imageAlt}
-                      className="w-full h-full object-cover"
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                    />
-                  </div>
+                <Link href={item.slug ? `/news/${item.slug}` : "#"} className="block">
+                  <article className="grid grid-cols-1 lg:grid-cols-2 gap-0 w-full h-full rounded-lg overflow-hidden">
+                    {/* Image - Top on mobile/tablet, Left on desktop */}
+                    <div className="relative w-full h-48 sm:h-56 md:h-64 lg:h-full overflow-hidden">
+                      <img
+                        src={getImageUrl(item.image)}
+                        alt={item.imageAlt}
+                        className="w-full h-full object-cover"
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                      />
+                    </div>
 
-                  {/* Text Content - Bottom on mobile/tablet, Right on desktop */}
-                  <div className="flex flex-col justify-center p-4 sm:p-5 md:p-6 bg-white">
-                    <h2 className="text-base sm:text-lg md:text-xl font-bold text-blue-600 mb-2 sm:mb-3 leading-tight line-clamp-2" style={{ margin: 0, padding: 0 }}>
-                      {item.title}
-                    </h2>
-                    {/* Excerpt - Hidden on mobile/tablet, visible on desktop */}
-                    {item.excerpt ? (
-                      <h4 className="hidden lg:block text-xs sm:text-sm text-gray-900 line-clamp-3 sm:line-clamp-4 leading-relaxed" style={{ margin: 0, padding: 0 }}>
-                        {item.excerpt}
-                      </h4>
-                    ) : item.timeAgo ? (
-                      <h4 className="hidden lg:block text-xs sm:text-sm text-gray-500" style={{ margin: 0, padding: 0 }}>
-                        {item.timeAgo}
-                      </h4>
-                    ) : null}
-                  </div>
-                </article>
+                    {/* Text Content - Bottom on mobile/tablet, Right on desktop */}
+                    <div className="flex flex-col justify-center p-4 sm:p-5 md:p-6 bg-white">
+                      <h2 className="text-base sm:text-lg md:text-xl font-bold text-blue-600 mb-2 sm:mb-3 leading-tight line-clamp-2" style={{ margin: 0, padding: 0 }}>
+                        {item.title}
+                      </h2>
+                      {/* Excerpt - Hidden on mobile/tablet, visible on desktop */}
+                      {item.excerpt ? (
+                        <h4 className="hidden lg:block text-xs sm:text-sm text-gray-900 line-clamp-3 sm:line-clamp-4 leading-relaxed" style={{ margin: 0, padding: 0 }}>
+                          {item.excerpt}
+                        </h4>
+                      ) : item.timeAgo ? (
+                        <h4 className="hidden lg:block text-xs sm:text-sm text-gray-500" style={{ margin: 0, padding: 0 }}>
+                          {item.timeAgo}
+                        </h4>
+                      ) : null}
+                    </div>
+                  </article>
+                </Link>
               </SwiperSlide>
             ))}
           </Swiper>
@@ -171,7 +176,7 @@ export function NewsSlider({ items, className, autoPlayInterval = 5000 }: NewsSl
                   {/* Thumbnail Image */}
                   <div className="relative w-20 h-14 sm:w-24 sm:h-16 md:w-28 md:h-20 rounded-lg overflow-hidden bg-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
                     <img
-                      src={item.image}
+                      src={getImageUrl(item.image)}
                       alt={item.imageAlt}
                       className="w-full h-full object-cover transition-opacity duration-200 hover:opacity-80"
                       sizes="(max-width: 640px) 80px, (max-width: 768px) 96px, 112px"

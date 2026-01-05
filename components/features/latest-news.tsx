@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode, Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
@@ -9,6 +10,7 @@ import { Play } from "lucide-react";
 import "swiper/css";
 import "swiper/css/free-mode";
 import "swiper/css/navigation";
+import { getImageUrl } from "@/lib/utils/image-url";
 
 interface NewsArticle {
   id: number;
@@ -18,6 +20,7 @@ interface NewsArticle {
   timeAgo: string;
   isVideo?: boolean;
   videoDuration?: string;
+  slug?: string;
 }
 
 interface LatestNewsProps {
@@ -105,35 +108,38 @@ export function LatestNews({ articles, className }: LatestNewsProps) {
       {/* News Articles List */}
       <div className="space-y-4">
         {articles.map((article) => (
-          <article
+          <Link
             key={article.id}
-            className="flex gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200 cursor-pointer"
+            href={article.slug ? `/news/${article.slug}` : "#"}
+            className="block"
           >
-            {/* Thumbnail Image */}
-            <div className="relative flex-shrink-0 w-24 h-16 sm:w-32 sm:h-20 md:w-40 md:h-24 rounded-lg overflow-hidden bg-gray-100">
-              <img
-                src={article.image}
-                alt={article.imageAlt}
-                className="w-full h-full object-cover"
-                sizes="(max-width: 640px) 96px, (max-width: 768px) 128px, 160px"
-              />
-              {/* Video Play Button Overlay */}
-              {article.isVideo && article.videoDuration && (
-                <div className="absolute bottom-1 start-1 flex items-center gap-1 bg-black/70 text-white px-1.5 py-0.5 rounded text-xs">
-                  <Play className="w-3 h-3" fill="currentColor" />
-                  <span>{article.videoDuration}</span>
-                </div>
-              )}
-            </div>
+            <article className="flex gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200 cursor-pointer">
+              {/* Thumbnail Image */}
+              <div className="relative flex-shrink-0 w-24 h-16 sm:w-32 sm:h-20 md:w-40 md:h-24 rounded-lg overflow-hidden bg-gray-100">
+                <img
+                  src={getImageUrl(article.image)}
+                  alt={article.imageAlt}
+                  className="w-full h-full object-cover"
+                  sizes="(max-width: 640px) 96px, (max-width: 768px) 128px, 160px"
+                />
+                {/* Video Play Button Overlay */}
+                {article.isVideo && article.videoDuration && (
+                  <div className="absolute bottom-1 start-1 flex items-center gap-1 bg-black/70 text-white px-1.5 py-0.5 rounded text-xs">
+                    <Play className="w-3 h-3" fill="currentColor" />
+                    <span>{article.videoDuration}</span>
+                  </div>
+                )}
+              </div>
 
-            {/* Content */}
-            <div className="flex-1 min-w-0 flex flex-col justify-between">
-              <h3 className="text-sm sm:text-base font-semibold text-gray-900 line-clamp-2 leading-snug mb-1">
-                {article.title}
-              </h3>
-              <p className="text-xs sm:text-sm text-gray-500">{article.timeAgo}</p>
-            </div>
-          </article>
+              {/* Content */}
+              <div className="flex-1 min-w-0 flex flex-col justify-between">
+                <h3 className="text-sm sm:text-base font-semibold text-gray-900 line-clamp-2 leading-snug mb-1">
+                  {article.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-500">{article.timeAgo}</p>
+              </div>
+            </article>
+          </Link>
         ))}
       </div>
     </section>
